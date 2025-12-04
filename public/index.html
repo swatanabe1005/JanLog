@@ -61,9 +61,9 @@
             <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
                 <i class="fa-solid fa-sliders mr-2"></i> ルール・レート設定
             </h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
                 <div>
-                    <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">持ち点</label>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">持ち点 (全員)</label>
                     <div class="relative">
                         <input type="number" id="settingStartScore" value="25000" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-gray-50 font-mono" onchange="saveSettingsToLocal()">
                         <span class="absolute right-3 top-2 text-gray-400 text-sm">点</span>
@@ -72,7 +72,7 @@
                 <div>
                     <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">返し点 (原点)</label>
                     <div class="relative">
-                        <input type="number" id="settingReturnScore" value="30000" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-gray-50 font-mono" onchange="saveSettingsToLocal()">
+                        <input type="number" id="settingReturnScore" value="25000" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-gray-50 font-mono" onchange="saveSettingsToLocal()">
                         <span class="absolute right-3 top-2 text-gray-400 text-sm">点</span>
                     </div>
                 </div>
@@ -93,6 +93,14 @@
                     </div>
                     <p class="text-xs text-gray-400 mt-1">※50=点5, 100=点ピン</p>
                 </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">場代総額 (日額)</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-2 text-gray-400 text-sm">¥</span>
+                        <input type="number" id="settingFee" value="1000" class="w-full pl-6 p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-gray-50 font-mono" onchange="saveSettingsToLocal()">
+                    </div>
+                    <p class="text-xs text-gray-400 mt-1">※総額を全員で割勘清算します。局数は関係ありません。</p>
+                </div>
             </div>
         </div>
 
@@ -105,7 +113,7 @@
                 <div class="card p-6">
                     <div class="flex justify-between items-center mb-6 border-b pb-4">
                         <h2 class="text-xl font-bold text-gray-800 flex items-center">
-                            <i class="fa-solid fa-pen-to-square mr-2 text-indigo-500"></i> スコア入力
+                            <i class="fa-solid fa-pen-to-square mr-2 text-indigo-500"></i> 局スコア入力
                         </h2>
                         <button onclick="resetInputs()" class="text-sm text-gray-500 hover:text-red-500 transition">
                             <i class="fa-solid fa-rotate-right"></i> 入力リセット
@@ -132,7 +140,7 @@
                 <!-- 計算結果プレビュー -->
                 <div id="resultPreview" class="hidden card p-6 bg-gradient-to-br from-gray-900 to-gray-800 text-white border-l-4 border-yellow-400">
                     <h3 class="text-lg font-bold mb-4 flex items-center text-yellow-400">
-                        <i class="fa-solid fa-flag-checkered mr-2"></i> 局の結果
+                        <i class="fa-solid fa-flag-checkered mr-2"></i> 局の結果 <span class="text-xs ml-3 text-gray-400">(場代割勘前の収支)</span>
                     </h3>
                     <div id="resultList" class="space-y-3 mb-6">
                         <!-- JSで結果生成 -->
@@ -158,18 +166,33 @@
             <div class="lg:col-span-4 space-y-6">
                 <!-- トータル成績パネル -->
                 <div class="card p-6 sticky top-6 border-t-4 border-indigo-500">
-                    <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center justify-between">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center justify-between">
                         <span><i class="fa-solid fa-chart-simple mr-2 text-indigo-500"></i> 本日の成績</span>
                         <span class="text-xs font-normal bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full">Total</span>
                     </h2>
                     
+                    <p class="text-xs text-gray-500 mb-2">総ポイントと場代割勘後の最終収支です。</p>
+                    <p class="text-xs text-red-500 mb-4 font-bold" id="dailyFeeMessage"></p>
+
+
                     <div id="dailyTotalList" class="space-y-4">
                         <p class="text-gray-400 text-sm text-center py-4">データがありません</p>
                     </div>
 
                     <div class="mt-6 pt-4 border-t text-xs text-gray-400">
                         <p>※ ポイント = (素点 - 返し点)/1000 + ウマ + オカ</p>
-                        <p>※ 収支 = ポイント × レート</p>
+                        <p>※ 収支 = ポイント × レート - 場代割勘額</p>
+                    </div>
+                </div>
+
+                <!-- 清算サマリーパネル -->
+                <div class="card p-6 border-l-4 border-green-500">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                        <i class="fa-solid fa-money-bill-transfer mr-2 text-green-500"></i> 清算サマリー
+                    </h2>
+                    <p class="text-sm text-gray-500 mb-4">マイナス収支のプレイヤーからプラス収支のプレイヤーへの支払い指示です。</p>
+                    <div id="settlementSummary" class="space-y-3">
+                        <p class="text-gray-400 text-sm text-center py-2">清算するデータがありません</p>
                     </div>
                 </div>
             </div>
@@ -180,7 +203,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, addDoc, onSnapshot, collection, query, orderBy, serverTimestamp, setLogLevel, deleteDoc, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, addDoc, onSnapshot, collection, query, orderBy, serverTimestamp, setLogLevel, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // 環境設定
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-janlog-app-id';
@@ -212,7 +235,6 @@
         window.updatePlayerName = (index, val) => {
             players[index].name = val;
             savePlayersToLocal();
-            // 名前を変えたら集計も再描画したほうがいいが、一旦保留
         };
 
         window.updatePlayerScore = (index, val) => {
@@ -236,10 +258,10 @@
                     </div>
                     <input type="text" value="${p.name}" placeholder="名前" 
                         onchange="updatePlayerName(${i}, this.value)"
-                        class="w-1/3 p-2 border border-gray-300 rounded focus:outline-none focus:border-indigo-500 transition text-sm font-medium">
+                        class="w-1/3 p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500 transition text-sm font-medium">
                     <input type="number" value="${p.score}" placeholder="点数" step="100"
                         oninput="updatePlayerScore(${i}, this.value)"
-                        class="flex-1 p-2 border border-gray-300 rounded focus:outline-none focus:border-indigo-500 transition text-sm font-mono text-right">
+                        class="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500 transition text-sm font-mono text-right">
                     <span class="text-gray-500 text-sm w-4">点</span>
                 </div>
             `).join('');
@@ -263,6 +285,7 @@
                 msg.textContent = "OK";
                 msg.className = "text-green-500 font-bold text-sm";
             } else {
+                console.error(`点数合計のズレ: ${diff}`);
                 msg.textContent = `ズレ: ${diff > 0 ? '+' : ''}${diff}`;
                 msg.className = "text-red-500 font-bold text-sm";
             }
@@ -274,22 +297,25 @@
         window.calculate = () => {
             // 設定値取得
             const startScore = parseInt(document.getElementById('settingStartScore').value) || 25000;
-            const returnScore = parseInt(document.getElementById('settingReturnScore').value) || 30000;
+            const returnScore = parseInt(document.getElementById('settingReturnScore').value) || 25000;
             const umaStr = document.getElementById('settingUma').value; // "10-30"
             const rate = parseInt(document.getElementById('settingRate').value) || 0;
+            // 場代総額は局計算には使用しないが、設定値として保持
+            const fee = parseInt(document.getElementById('settingFee').value) || 0; 
 
-            const [uma2, uma1] = umaStr.split('-').map(Number); // 3位(-uma2), 2位(+uma2), 4位(-uma1), 1位(+uma1) ※注: 一般的な表記に対応
+            // ウマの値を解析 [3位・2位のウマ, 4位・1位のウマ]
+            const [uma3_2, uma4_1] = umaStr.split('-').map(Number); 
 
             // 入力バリデーション
             const scores = players.map(p => parseInt(p.score));
-            if (scores.some(isNaN)) {
-                alert("全員の点数を入力してください");
+            if (scores.some(isNaN) || scores.length !== 4) {
+                console.error("全員の点数を入力してください");
                 return;
             }
 
             const totalScore = scores.reduce((a, b) => a + b, 0);
             if (Math.abs(totalScore - startScore * 4) > 100) {
-                if (!confirm(`点数合計が${totalScore}点です。（持ち点x4 = ${startScore*4}）\n計算を続けますか？`)) return;
+                console.warn(`点数合計のズレが大きいです。計算を続行します。`);
             }
 
             // プレイヤーオブジェクト作成（計算用）
@@ -308,66 +334,68 @@
             // 順位付与
             results.forEach((r, rankIdx) => r.rank = rankIdx + 1);
 
-            // ポイント計算
             // オカ = (返し点 - 持ち点) * 4
-            const oka = (returnScore - startScore) * 4; 
+            const okaPoint = (returnScore - startScore) * 4 / 1000; 
 
             results.forEach(r => {
-                // 素点計算: (持ち点 - 返し点) / 1000
-                // 五捨六入などはMath.roundで代用（本来は細かい規定があるが簡易実装）
+                // 素点計算: (最終点数 - 返し点) / 1000
                 let point = (r.rawScore - returnScore) / 1000;
+                let umaOkaPoint = 0;
                 
-                // ウマ・オカ加算
+                // ウマ・オカ計算
                 if (r.rank === 1) {
-                    point += oka / 1000;
-                    point += uma1; // トップ賞のウマ
+                    umaOkaPoint += okaPoint; // オカ全取り
+                    umaOkaPoint += uma4_1; // 1位のウマ
                 } else if (r.rank === 2) {
-                    point += uma2;
+                    umaOkaPoint += uma3_2; // 2位のウマ
                 } else if (r.rank === 3) {
-                    point -= uma2;
+                    umaOkaPoint -= uma3_2; // 3位のウマ
                 } else if (r.rank === 4) {
-                    point -= uma1;
+                    umaOkaPoint -= uma4_1; // 4位のウマ
                 }
 
-                // ポイントを小数第1位まで等（ここでは整数丸めを行わず、表示時に調整）
-                // 一般的には五捨六入で整数にする場合が多いが、アプリなので小数も許容
-                r.point = Math.round(point * 10) / 10;
-                
-                // 金額計算
-                r.money = Math.round(r.point * rate); // 金額は整数
+                // ポイント合計
+                r.point = point + umaOkaPoint;
+
+                // 金額計算 (場代清算前)
+                r.moneyPreFee = Math.round(r.point * rate); 
             });
 
-            // トップの人に端数調整（ポイント合計が0になるように）
+            // 1. ポイントの端数調整 (合計が0になるように)
             const totalPoint = results.reduce((sum, r) => sum + r.point, 0);
             if (Math.abs(totalPoint) > 0.01) {
                 // 誤差をトップから引く（または足す）
                 const topPlayer = results.find(r => r.rank === 1);
+                // 小数点第1位で丸めるために10をかける
                 topPlayer.point = Math.round((topPlayer.point - totalPoint) * 10) / 10;
-                topPlayer.money = Math.round(topPlayer.point * rate); // 金額再計算
+                topPlayer.moneyPreFee = Math.round(topPlayer.point * rate); // 金額再計算
             }
+            
+            // finalMoneyは場代清算前の収支とする。
+            let finalResults = results.map(r => ({ ...r, finalMoney: r.moneyPreFee }));
+
 
             currentCalculatedData = {
                 createdAt: serverTimestamp(), // 保存時に上書きされるがプレースホルダー
-                results: results,
-                settings: { startScore, returnScore, uma: umaStr, rate }
+                results: finalResults,
+                settings: { startScore, returnScore, uma: umaStr, rate, fee }
             };
 
-            displayResultPreview(results);
+            displayResultPreview(finalResults);
         };
 
         function displayResultPreview(results) {
             const container = document.getElementById('resultList');
-            const colors = ['bg-yellow-100 text-yellow-800', 'bg-blue-50 text-blue-800', 'bg-green-50 text-green-800', 'bg-red-50 text-red-800'];
             
             container.innerHTML = results.map((r, i) => {
-                const moneyClass = r.money >= 0 ? 'text-blue-600' : 'text-red-600';
-                const moneySign = r.money > 0 ? '+' : '';
+                const moneyClass = r.finalMoney >= 0 ? 'text-blue-300' : 'text-red-300';
+                const moneySign = r.finalMoney > 0 ? '+' : '';
                 const pointSign = r.point > 0 ? '+' : '';
                 
                 return `
                 <div class="flex items-center justify-between p-3 rounded-lg ${i === 0 ? 'bg-white bg-opacity-10' : 'bg-white bg-opacity-5'}">
                     <div class="flex items-center">
-                        <div class="w-6 h-6 rounded flex items-center justify-center font-bold text-xs mr-3 ${i===0?'bg-yellow-500 text-black':'bg-gray-600 text-white'}">
+                        <div class="w-6 h-6 rounded flex items-center justify-center font-bold text-xs mr-3 ${r.rank===1?'bg-yellow-500 text-black':'bg-gray-600 text-white'}">
                             ${r.rank}
                         </div>
                         <div>
@@ -376,8 +404,8 @@
                         </div>
                     </div>
                     <div class="text-right">
-                        <div class="font-bold text-lg ${r.point > 0 ? 'text-yellow-400' : 'text-gray-300'}">${pointSign}${r.point}</div>
-                        <div class="text-xs ${r.money >= 0 ? 'text-blue-300' : 'text-red-300'}">${moneySign}${r.money.toLocaleString()}円</div>
+                        <div class="font-bold text-lg ${r.point > 0 ? 'text-yellow-400' : 'text-gray-300'}">${pointSign}${r.point.toFixed(1)}</div>
+                        <div class="text-xs ${moneyClass}">${moneySign}${r.finalMoney.toLocaleString()}円</div>
                     </div>
                 </div>
             `}).join('');
@@ -386,7 +414,7 @@
         }
 
         // ------------------------------------
-        // データ保存・読み込み (Firestore)
+        // データ保存・読み込み (Firestore/Local)
         // ------------------------------------
         
         // ローカルストレージ設定保存
@@ -395,7 +423,8 @@
                 startScore: document.getElementById('settingStartScore').value,
                 returnScore: document.getElementById('settingReturnScore').value,
                 uma: document.getElementById('settingUma').value,
-                rate: document.getElementById('settingRate').value
+                rate: document.getElementById('settingRate').value,
+                fee: document.getElementById('settingFee').value // 場代総額を保存
             };
             localStorage.setItem('janlog_settings', JSON.stringify(settings));
         };
@@ -407,6 +436,12 @@
                 document.getElementById('settingReturnScore').value = s.returnScore;
                 document.getElementById('settingUma').value = s.uma;
                 document.getElementById('settingRate').value = s.rate;
+                // 新しい場代設定（総額）
+                if (s.fee !== undefined) {
+                    document.getElementById('settingFee').value = s.fee;
+                } else {
+                    document.getElementById('settingFee').value = 0; // デフォルトを0にするか、適切な初期値に設定
+                }
             }
         }
 
@@ -446,7 +481,10 @@
         }
 
         window.saveSession = async () => {
-            if (!userId || !currentCalculatedData) return;
+            if (!userId || !currentCalculatedData) {
+                console.error("ユーザーIDまたは計算データがありません。");
+                return;
+            }
             
             try {
                 const path = `artifacts/${appId}/users/${userId}/sessions`;
@@ -454,22 +492,24 @@
                 
                 await addDoc(collection(db, path), currentCalculatedData);
                 
-                // リセット
                 resetInputs();
-                alert("記録しました！");
+                console.log("記録しました！");
             } catch (e) {
                 console.error("Save Error", e);
-                alert("保存に失敗しました");
+                console.error("保存に失敗しました");
             }
         };
 
         window.deleteSession = async (id) => {
-            if(!confirm("この記録を削除しますか？")) return;
+            // 確認モーダルの代わりにカスタムUIを使用することが推奨されますが、ここでは簡単な確認で代用
+            if(!confirm("この記録を削除しますか？")) return; 
             try {
                 const path = `artifacts/${appId}/users/${userId}/sessions`;
                 await deleteDoc(doc(db, path, id));
+                console.log("削除しました。");
             } catch (e) {
                 console.error("Delete Error", e);
+                console.error("削除に失敗しました。");
             }
         };
 
@@ -496,26 +536,41 @@
                         const date = data.createdAt ? new Date(data.createdAt.toDate()) : new Date();
                         const dateStr = date.toLocaleString('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute:'2-digit' });
                         
-                        // 1位の情報を取得
-                        const top = data.results.find(r => r.rank === 1);
-                        
+                        const settings = data.settings || {};
+                        const rateStr = settings.rate ? `¥${settings.rate.toLocaleString()}/1K` : 'レート不明';
+                        const okaValue = settings.returnScore && settings.startScore ? (settings.returnScore - settings.startScore) * 4 / 1000 : 0;
+                        const umaOkaStr = `ウマ:${settings.uma || 'N/A'}, オカ:${okaValue.toFixed(0)}P`;
+                        // 場代総額を表示
+                        const feeStr = settings.fee && settings.fee > 0 ? `場代総額: ¥${settings.fee.toLocaleString()}` : '';
+
+
                         const html = `
-                            <div class="border border-gray-200 rounded-lg p-3 hover:bg-gray-50 transition">
-                                <div class="flex justify-between items-center mb-2 border-b border-dashed pb-2">
+                            <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition">
+                                <div class="flex justify-between items-center mb-2 pb-2">
                                     <div class="text-xs text-gray-500 font-mono">${dateStr}</div>
                                     <button onclick="deleteSession('${doc.id}')" class="text-xs text-red-400 hover:text-red-600">削除</button>
                                 </div>
+
+                                <div class="flex justify-between text-xs text-gray-600 mb-3 p-2 bg-indigo-50 rounded">
+                                    <span class="font-bold">${rateStr}</span>
+                                    <span>${umaOkaStr}</span>
+                                    ${feeStr ? `<span>${feeStr}</span>` : ''}
+                                </div>
+
                                 <div class="space-y-1">
                                     ${data.results.sort((a,b)=>a.rank-b.rank).map(r => {
                                         const ptColor = r.point > 0 ? 'text-green-600' : (r.point < 0 ? 'text-red-500' : 'text-gray-500');
+                                        const moneyColor = r.finalMoney > 0 ? 'text-blue-600' : (r.finalMoney < 0 ? 'text-red-600' : 'text-gray-500');
+
                                         return `
                                         <div class="flex justify-between text-sm items-center">
                                             <div class="flex items-center w-24">
                                                 <span class="inline-block w-4 text-center text-xs font-bold ${r.rank===1?'text-yellow-600':''}">${r.rank}</span>
                                                 <span class="truncate ml-1 font-medium">${r.name}</span>
                                             </div>
-                                            <div class="text-gray-500 text-xs w-16 text-right">${r.rawScore}</div>
-                                            <div class="font-bold w-12 text-right ${ptColor}">${r.point > 0 ? '+' : ''}${r.point}</div>
+                                            <div class="text-gray-500 text-xs w-16 text-right">${r.rawScore.toLocaleString()}</div>
+                                            <div class="font-bold w-12 text-right ${ptColor}">${r.point > 0 ? '+' : ''}${r.point.toFixed(1)}</div>
+                                            <div class="text-xs font-bold w-16 text-right ${moneyColor}">${r.finalMoney > 0 ? '+' : ''}${r.finalMoney.toLocaleString()}円</div>
                                         </div>
                                         `
                                     }).join('')}
@@ -530,9 +585,78 @@
                 calculateDailyTotal(allSessions);
             });
         }
+        
+        // 清算指示を生成し、UIに表示する
+        function renderSettlementSummary(playerStats) {
+            let settlements = [];
+            
+            // 収支がマイナス（支払う側）とプラス（受け取る側）のリストを作成
+            let payers = Object.values(playerStats)
+                .filter(p => p.totalMoney < 0)
+                .map(p => ({
+                    name: p.name,
+                    // 支払うべき額 (正の値)
+                    amount: Math.round(-p.totalMoney) 
+                })); 
+            let receivers = Object.values(playerStats)
+                .filter(p => p.totalMoney > 0)
+                .map(p => ({
+                    name: p.name,
+                    // 受け取るべき額 (正の値)
+                    amount: Math.round(p.totalMoney) 
+                }));
+
+            let pIndex = 0;
+            let rIndex = 0;
+
+            // 支払いをマッチングする（最小回数での清算アルゴリズム）
+            while (pIndex < payers.length && rIndex < receivers.length) {
+                let payer = payers[pIndex];
+                let receiver = receivers[rIndex];
+
+                // 支払われる額は、支払い義務額と受取権利額の小さい方
+                let payment = Math.min(payer.amount, receiver.amount);
+
+                if (payment > 0) {
+                    settlements.push({
+                        from: payer.name,
+                        to: receiver.name,
+                        amount: payment // 既に丸め済み
+                    });
+                }
+
+                // 残額を更新
+                payer.amount -= payment;
+                receiver.amount -= payment;
+
+                // 支払い義務/受取権利がなくなったプレイヤーのインデックスを進める
+                // 端数誤差対策として0.5未満をチェック
+                if (payer.amount <= 0.5) { 
+                    pIndex++;
+                }
+                if (receiver.amount <= 0.5) { 
+                    rIndex++;
+                }
+            }
+            
+            const summaryContainer = document.getElementById('settlementSummary');
+            if (settlements.length === 0) {
+                summaryContainer.innerHTML = '<p class="text-gray-400 text-sm text-center py-2">清算の必要はありません (収支±0)</p>';
+            } else {
+                summaryContainer.innerHTML = settlements.map(s => `
+                    <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg shadow-sm text-sm">
+                        <div class="font-medium text-gray-700">${s.from}</div>
+                        <div class="flex items-center text-green-700 font-bold">
+                            <i class="fa-solid fa-arrow-right mx-2 text-green-500"></i>
+                            ¥${s.amount.toLocaleString()}
+                        </div>
+                        <div class="font-medium text-gray-700">${s.to}へ</div>
+                    </div>
+                `).join('');
+            }
+        }
 
         function calculateDailyTotal(sessions) {
-            // 今日の日付のデータのみ抽出 (簡易的にローカル時間で判定)
             const today = new Date().toDateString();
             const todaySessions = sessions.filter(s => {
                 if(!s.createdAt) return false;
@@ -540,20 +664,44 @@
             });
 
             const playerStats = {};
+            const totalGames = todaySessions.length;
+            const feeMessageDisplay = document.getElementById('dailyFeeMessage');
+            
+            let totalFeeDebit = 0;
+            let feePerPlayer = 0;
+            
+            // 最初に設定された場代総額を取得（その日のルールとして最新のものを使用）
+            let latestFeeSetting = 0;
+            if (sessions.length > 0 && sessions[0].settings && sessions[0].settings.fee !== undefined) {
+                latestFeeSetting = parseInt(sessions[0].settings.fee) || 0;
+            }
+            
+            // 場代総額を決定（局数には依存しない）
+            totalFeeDebit = latestFeeSetting;
+            feePerPlayer = totalFeeDebit / 4; // 割勘額
+            
+            // 場代割勘メッセージの更新
+            if (totalGames > 0 && totalFeeDebit > 0) {
+                feeMessageDisplay.textContent = `場代総額 ¥${totalFeeDebit.toLocaleString()}を全員で割勘清算します (一人あたり ¥${Math.round(feePerPlayer).toLocaleString()})。`;
+            } else {
+                 feeMessageDisplay.textContent = '';
+            }
 
+            // 1. 各局の成績を合算 (場代割勘前の合計)
             todaySessions.forEach(session => {
                 session.results.forEach(r => {
                     if (!playerStats[r.name]) {
                         playerStats[r.name] = { 
                             name: r.name, 
                             totalPoint: 0, 
-                            totalMoney: 0,
+                            totalMoney: 0, // 場代割勘前の合計
                             ranks: [0,0,0,0], // 1位, 2位, 3位, 4位の回数
                             games: 0
                         };
                     }
-                    playerStats[r.name].totalPoint += r.point;
-                    playerStats[r.name].totalMoney += (r.money || 0);
+                    // r.finalMoney は場代清算前の局収支
+                    playerStats[r.name].totalPoint += (r.point || 0);
+                    playerStats[r.name].totalMoney += (r.finalMoney || 0); 
                     playerStats[r.name].games += 1;
                     if(r.rank >= 1 && r.rank <= 4) {
                         playerStats[r.name].ranks[r.rank - 1]++;
@@ -561,23 +709,34 @@
                 });
             });
 
-            // 集計表示
+            // 2. 場代を割勘して最終収支を決定
+            const finalPlayerStats = Object.values(playerStats).map(p => ({
+                ...p,
+                // 場代割勘後の最終収支
+                totalMoney: p.totalMoney - feePerPlayer 
+            }));
+
+            // 3. 集計表示
             const container = document.getElementById('dailyTotalList');
-            if (Object.keys(playerStats).length === 0) {
+            if (finalPlayerStats.length === 0) {
                 container.innerHTML = '<p class="text-gray-400 text-sm text-center py-4">本日の対局はまだありません</p>';
+                renderSettlementSummary({}); // 清算サマリーもリセット
                 return;
             }
 
             // ポイント順にソート
-            const sortedPlayers = Object.values(playerStats).sort((a, b) => b.totalPoint - a.totalPoint);
+            const sortedPlayers = finalPlayerStats.sort((a, b) => b.totalPoint - a.totalPoint);
 
             container.innerHTML = sortedPlayers.map((p, i) => {
                 // 小数点処理による誤差で-0.0になるのを防ぐ
                 const displayPoint = Math.round(p.totalPoint * 10) / 10;
-                const ptClass = displayPoint > 0 ? 'text-green-600 bg-green-50' : (displayPoint < 0 ? 'text-red-600 bg-red-50' : 'text-gray-600 bg-gray-50');
+                const ptClass = displayPoint > 0 ? 'text-green-800 bg-green-100' : (displayPoint < 0 ? 'text-red-800 bg-red-100' : 'text-gray-600 bg-gray-100');
                 
                 // 平均順位
                 const avgRank = (p.ranks.reduce((sum, count, idx) => sum + count * (idx + 1), 0) / p.games).toFixed(2);
+                
+                // 最終収支を丸めて表示
+                const finalMoneyRounded = Math.round(p.totalMoney);
 
                 return `
                 <div class="flex items-center justify-between p-3 rounded-lg border border-gray-100 bg-white shadow-sm">
@@ -585,7 +744,7 @@
                         <div class="flex items-center space-x-2 mb-1">
                             <span class="font-bold text-gray-800">${p.name}</span>
                             <span class="text-xs px-2 py-0.5 rounded-full ${ptClass} font-bold">
-                                ${displayPoint > 0 ? '+' : ''}${displayPoint}
+                                ${displayPoint > 0 ? '+' : ''}${displayPoint.toLocaleString()} P
                             </span>
                         </div>
                         <div class="flex text-xs text-gray-400 space-x-3">
@@ -594,20 +753,24 @@
                         </div>
                     </div>
                     <div class="text-right">
-                        <div class="font-bold text-lg ${p.totalMoney >= 0 ? 'text-blue-600' : 'text-red-500'}">
-                            ${p.totalMoney > 0 ? '+' : ''}${p.totalMoney.toLocaleString()}
+                        <div class="font-bold text-lg ${finalMoneyRounded >= 0 ? 'text-blue-600' : 'text-red-500'}">
+                            ${finalMoneyRounded > 0 ? '+' : ''}${finalMoneyRounded.toLocaleString()}
                             <span class="text-xs font-normal text-gray-400">円</span>
                         </div>
-                        <div class="text-xs text-gray-400 flex space-x-1 justify-end">
-                            <span title="1位" class="text-yellow-600 font-bold">${p.ranks[0]}</span>-
-                            <span title="2位">${p.ranks[1]}</span>-
-                            <span title="3位">${p.ranks[2]}</span>-
-                            <span title="4位" class="text-gray-600">${p.ranks[3]}</span>
+                        <div class="text-xs text-gray-400 flex space-x-1 justify-end" title="順位回数: 1位 - 2位 - 3位 - 4位">
+                            <span class="text-yellow-600 font-bold">${p.ranks[0]}</span>-
+                            <span class="text-gray-700">${p.ranks[1]}</span>-
+                            <span class="text-gray-700">${p.ranks[2]}</span>-
+                            <span class="text-gray-600 font-bold">${p.ranks[3]}</span>
                         </div>
                     </div>
                 </div>
                 `;
             }).join('');
+
+            // 4. 清算サマリーの表示
+            renderSettlementSummary(finalPlayerStats.reduce((acc, p) => ({...acc, [p.name]: p}), {}));
+
         }
 
     </script>

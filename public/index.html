@@ -235,9 +235,6 @@
     <script type="module">
         // 環境設定
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-janlog-app-id';
-        
-        import { initializeApp } from "firebase/app";
-        import { getAnalytics } from "firebase/analytics";
         const firebaseConfig = {
             apiKey: "AIzaSyDvBXs3yigvf6-hCsZdwMKT4qGeFPXdCcs",
             authDomain: "janlog.firebaseapp.com",
@@ -247,6 +244,7 @@
             appId: "1:398225426396:web:f03d1255d06c2fec5ff119",
             measurementId: "G-K7CPJ7TSTN"
         };
+        firebase.initializeApp(firebaseConfig);
 
         try {
             firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');

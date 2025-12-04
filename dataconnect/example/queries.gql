@@ -1,0 +1,24 @@
+mutation CreateUser($username: String!, $email: String!, $createdAt: Timestamp!) @auth(level: USER) {
+  user_insert(data: {username: $username, email: $email, createdAt: $createdAt, id_expr: "uuidV4()"})
+}
+
+query ListWorkoutsForUser($userId: UUID!) @auth(level: USER) {
+  workouts(where: {userId: {eq: $userId}}) {
+    id
+    date
+    durationMinutes
+    workoutType
+  }
+}
+
+mutation UpdateGoal($id: UUID!, $currentValue: Float) @auth(level: USER) {
+  goal_update(key: {id: $id}, data: {currentValue: $currentValue})
+}
+
+query ListExerciseDefinitions @auth(level: PUBLIC, insecureReason: "This operation is safe to expose to the public") {
+  exerciseDefinitions {
+    id
+    name
+    category
+  }
+}

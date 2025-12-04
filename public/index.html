@@ -1,12 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
-
 <head>
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JanLog - 麻雀成績・清算管理</title>
@@ -21,28 +15,24 @@
             font-family: 'Inter', sans-serif;
             background-color: #f3f4f6;
         }
-
         .card {
             background-color: white;
             border-radius: 1rem;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
-
         .hide-scrollbar::-webkit-scrollbar {
             display: none;
         }
-
         .hide-scrollbar {
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
     </style>
 </head>
-
 <body class="min-h-screen text-gray-800">
 
     <div id="app" class="container mx-auto p-4 md:p-6 max-w-6xl">
-
+        
         <!-- ヘッダー -->
         <header class="mb-6 flex flex-col md:flex-row justify-between items-center bg-white p-4 rounded-xl shadow-sm">
             <div class="flex items-center mb-4 md:mb-0">
@@ -59,8 +49,7 @@
                     <p class="text-gray-500">User ID</p>
                     <p id="userIdDisplay" class="font-mono font-bold text-gray-700">Loading...</p>
                 </div>
-                <button onclick="toggleSettings()"
-                    class="flex items-center space-x-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition text-gray-700 font-medium">
+                <button onclick="toggleSettings()" class="flex items-center space-x-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition text-gray-700 font-medium">
                     <i class="fa-solid fa-gear"></i>
                     <span>ルール設定</span>
                 </button>
@@ -76,26 +65,20 @@
                 <div>
                     <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">持ち点 (全員)</label>
                     <div class="relative">
-                        <input type="number" id="settingStartScore" value="25000"
-                            class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-gray-50 font-mono"
-                            onchange="saveSettingsToLocal()">
+                        <input type="number" id="settingStartScore" value="25000" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-gray-50 font-mono" onchange="saveSettingsToLocal()">
                         <span class="absolute right-3 top-2 text-gray-400 text-sm">点</span>
                     </div>
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">返し点 (原点)</label>
                     <div class="relative">
-                        <input type="number" id="settingReturnScore" value="25000"
-                            class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-gray-50 font-mono"
-                            onchange="saveSettingsToLocal()">
+                        <input type="number" id="settingReturnScore" value="25000" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-gray-50 font-mono" onchange="saveSettingsToLocal()">
                         <span class="absolute right-3 top-2 text-gray-400 text-sm">点</span>
                     </div>
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">ウマ (順位点)</label>
-                    <select id="settingUma"
-                        class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-gray-50"
-                        onchange="saveSettingsToLocal()">
+                    <select id="settingUma" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-gray-50" onchange="saveSettingsToLocal()">
                         <option value="10-30">10 - 30 (ゴットー)</option>
                         <option value="10-20">10 - 20 (ワンツー)</option>
                         <option value="5-10">5 - 10 (ウマナリ)</option>
@@ -106,9 +89,7 @@
                     <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">レート (1000点あたり)</label>
                     <div class="relative">
                         <span class="absolute left-3 top-2 text-gray-400 text-sm">¥</span>
-                        <input type="number" id="settingRate" value="50"
-                            class="w-full pl-6 p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-gray-50 font-mono"
-                            onchange="saveSettingsToLocal()">
+                        <input type="number" id="settingRate" value="50" class="w-full pl-6 p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-gray-50 font-mono" onchange="saveSettingsToLocal()">
                     </div>
                     <p class="text-xs text-gray-400 mt-1">※50=点5, 100=点ピン</p>
                 </div>
@@ -117,18 +98,14 @@
                     <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">場代総額 (日額)</label>
                     <div class="relative">
                         <span class="absolute left-3 top-2 text-gray-400 text-sm">¥</span>
-                        <input type="number" id="settingFee" value="1000"
-                            class="w-full pl-6 p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-gray-50 font-mono"
-                            onchange="saveSettingsToLocal()">
+                        <input type="number" id="settingFee" value="1000" class="w-full pl-6 p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-gray-50 font-mono" onchange="saveSettingsToLocal()">
                     </div>
                     <p class="text-xs text-gray-400 mt-1">※総額を全員で割勘清算します。</p>
                 </div>
                 <!-- NEW: 場代支払い者 (立て替え者) -->
                 <div>
                     <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">場代支払い者 (立て替え)</label>
-                    <select id="settingFeePayer"
-                        class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-gray-50"
-                        onchange="saveSettingsToLocal()">
+                    <select id="settingFeePayer" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-gray-50" onchange="saveSettingsToLocal()">
                         <!-- JSでオプションを生成 -->
                     </select>
                     <p class="text-xs text-gray-400 mt-1">※代表して払った人を選択。</p>
@@ -137,10 +114,10 @@
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-
+            
             <!-- 左カラム：入力・計算 (8/12) -->
             <div class="lg:col-span-8 space-y-6">
-
+                
                 <!-- スコア入力パネル -->
                 <div class="card p-6">
                     <div class="flex justify-between items-center mb-6 border-b pb-4">
@@ -163,25 +140,21 @@
                     </div>
 
                     <div class="mt-6 pt-4 border-t flex flex-col sm:flex-row gap-4">
-                        <button onclick="calculate()"
-                            class="flex-1 bg-indigo-600 text-white font-bold py-3 px-6 rounded-lg shadow hover:bg-indigo-700 transition flex justify-center items-center">
+                        <button onclick="calculate()" class="flex-1 bg-indigo-600 text-white font-bold py-3 px-6 rounded-lg shadow hover:bg-indigo-700 transition flex justify-center items-center">
                             <i class="fa-solid fa-calculator mr-2"></i> 計算する
                         </button>
                     </div>
                 </div>
 
                 <!-- 計算結果プレビュー -->
-                <div id="resultPreview"
-                    class="hidden card p-6 bg-gradient-to-br from-gray-900 to-gray-800 text-white border-l-4 border-yellow-400">
+                <div id="resultPreview" class="hidden card p-6 bg-gradient-to-br from-gray-900 to-gray-800 text-white border-l-4 border-yellow-400">
                     <h3 class="text-lg font-bold mb-4 flex items-center text-yellow-400">
-                        <i class="fa-solid fa-flag-checkered mr-2"></i> 局の結果 <span
-                            class="text-xs ml-3 text-gray-400">(場代割勘前の収支)</span>
+                        <i class="fa-solid fa-flag-checkered mr-2"></i> 局の結果 <span class="text-xs ml-3 text-gray-400">(場代割勘前の収支)</span>
                     </h3>
                     <div id="resultList" class="space-y-3 mb-6">
                         <!-- JSで結果生成 -->
                     </div>
-                    <button onclick="saveSession()"
-                        class="w-full bg-yellow-500 text-gray-900 font-bold py-3 rounded-lg hover:bg-yellow-400 transition shadow-lg">
+                    <button onclick="saveSession()" class="w-full bg-yellow-500 text-gray-900 font-bold py-3 rounded-lg hover:bg-yellow-400 transition shadow-lg">
                         <i class="fa-solid fa-save mr-2"></i> この結果を記録する
                     </button>
                 </div>
@@ -204,10 +177,9 @@
                 <div class="card p-6 sticky top-6 border-t-4 border-indigo-500">
                     <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center justify-between">
                         <span><i class="fa-solid fa-chart-simple mr-2 text-indigo-500"></i> 本日の成績</span>
-                        <span
-                            class="text-xs font-normal bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full">Total</span>
+                        <span class="text-xs font-normal bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full">Total</span>
                     </h2>
-
+                    
                     <p class="text-xs text-gray-500 mb-2">対局の純粋なスコア収支です（場代含まず）。</p>
                     <p class="text-xs text-red-500 mb-4 font-bold" id="dailyFeeMessage"></p>
 
@@ -238,8 +210,18 @@
 
     <!-- Firebase SDKs -->
     <script type="module">
-        // 環境設定
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-janlog-app-id';
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, addDoc, onSnapshot, collection, query, serverTimestamp, setLogLevel, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // 環境設定 (Canvasのグローバル変数に依存しないように変更)
+        // 注意: Firestoreのパス構築に使用するアプリケーションID。独立した環境用として固定値を設定。
+        const appId = 'janlog-standalone-app'; 
+        
+        // ------------------------------------
+        // 1. Firebase設定の定義 (ユーザー提供の情報をそのまま使用)
+        // ------------------------------------
+        // !!重要!!: 実行する際は、この値をあなたのプロジェクトの正しい設定に置き換えてください。
         const firebaseConfig = {
             apiKey: "AIzaSyDvBXs3yigvf6-hCsZdwMKT4qGeFPXdCcs",
             authDomain: "janlog.firebaseapp.com",
@@ -249,24 +231,12 @@
             appId: "1:398225426396:web:f03d1255d06c2fec5ff119",
             measurementId: "G-K7CPJ7TSTN"
         };
-        firebase.initializeApp(firebaseConfig);
-
-        try {
-            firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
-            // Firebase設定の最低限のチェック (apiKeyがあればFirebaseの初期化を試みる)
-            if (!firebaseConfig.apiKey) {
-                console.warn("Firebase Config does not contain an API Key. Firestore will be disabled.");
-                firebaseConfig = null; // 無効な設定としてマーク
-            }
-        } catch (e) {
-            console.error("Failed to parse __firebase_config:", e);
-            firebaseConfig = null; // パースエラー
-        }
-
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        
+        // 認証トークンは使用しないためnullに設定
+        const initialAuthToken = null;
 
         let app, db, auth, userId;
-        let isFirebaseActive = !!firebaseConfig; // Firebaseが使用可能かどうかのフラグ
+        let isFirebaseActive = !!firebaseConfig.apiKey; // apiKeyがあればActiveとみなす
         let currentCalculatedData = null; // 計算結果の一時保存用
 
         // デフォルトプレイヤー
@@ -299,7 +269,7 @@
         window.updatePlayerName = (index, val) => {
             players[index].name = val;
             savePlayersToLocal();
-            renderFeePayerOptions();
+            renderFeePayerOptions(); 
         };
 
         window.updatePlayerScore = (index, val) => {
@@ -319,7 +289,7 @@
             container.innerHTML = players.map((p, i) => `
                 <div class="flex items-center space-x-2">
                     <div class="w-8 h-8 flex items-center justify-center bg-gray-200 rounded-full text-xs font-bold text-gray-600">
-                        ${['東', '南', '西', '北'][i]}
+                        ${['東','南','西','北'][i]}
                     </div>
                     <input type="text" value="${p.name}" placeholder="名前" 
                         onchange="updatePlayerName(${i}, this.value)"
@@ -331,9 +301,9 @@
                 </div>
             `).join('');
             updateTotalScoreDisplay();
-            renderFeePayerOptions();
+            renderFeePayerOptions(); 
         }
-
+        
         // NEW: 場代支払い者ドロップダウンのオプションを生成・設定
         function renderFeePayerOptions() {
             const select = document.getElementById('settingFeePayer');
@@ -341,7 +311,7 @@
 
             // ローカルストレージから最後に選択されていた支払い者名を取得
             const savedPayer = localStorage.getItem('janlog_fee_payer_name') || '__everyone__';
-
+            
             let optionsHtml = '<option value="__everyone__">全員で割勘 (立て替えなし)</option>';
 
             // 現在のプレイヤー名リストからオプションを生成
@@ -366,12 +336,12 @@
             const targetTotal = startScore * 4;
 
             display.textContent = `合計: ${total.toLocaleString()}点`;
-
+            
             // 簡易チェック
             const diff = total - targetTotal;
             const msg = document.getElementById('checkMessage');
             if (total === 0 && players.every(p => !p.score)) {
-                msg.textContent = "";
+                 msg.textContent = "";
             } else if (diff === 0) {
                 msg.textContent = "OK";
                 msg.className = "text-green-500 font-bold text-sm";
@@ -391,16 +361,16 @@
             const returnScore = parseInt(document.getElementById('settingReturnScore').value) || 25000;
             const umaStr = document.getElementById('settingUma').value; // "10-30"
             const rate = parseInt(document.getElementById('settingRate').value) || 0;
-            const fee = parseInt(document.getElementById('settingFee').value) || 0;
+            const fee = parseInt(document.getElementById('settingFee').value) || 0; 
             const feePayer = document.getElementById('settingFeePayer').value || '__everyone__'; // NEW: 支払い者
 
             // ウマの値を解析 [3位・2位のウマ, 4位・1位のウマ]
-            const [uma3_2, uma4_1] = umaStr.split('-').map(Number);
+            const [uma3_2, uma4_1] = umaStr.split('-').map(Number); 
 
             // 入力バリデーション
             const scores = players.map(p => parseInt(p.score));
             if (scores.some(isNaN) || scores.length !== 4) {
-                console.error("全員の点数を入力してください");
+                console.error("全員の点数を入力してください"); 
                 // カスタムアラートに置き換えることが推奨
                 return;
             }
@@ -427,13 +397,13 @@
             results.forEach((r, rankIdx) => r.rank = rankIdx + 1);
 
             // オカ = (返し点 - 持ち点) * 4
-            const okaPoint = (returnScore - startScore) * 4 / 1000;
+            const okaPoint = (returnScore - startScore) * 4 / 1000; 
 
             results.forEach(r => {
                 // 素点計算: (最終点数 - 返し点) / 1000
                 let point = (r.rawScore - returnScore) / 1000;
                 let umaOkaPoint = 0;
-
+                
                 // ウマ・オカ計算
                 if (r.rank === 1) {
                     umaOkaPoint += okaPoint; // オカ全取り
@@ -450,7 +420,7 @@
                 r.point = point + umaOkaPoint;
 
                 // 金額計算 (場代清算前)
-                r.moneyPreFee = Math.round(r.point * rate);
+                r.moneyPreFee = Math.round(r.point * rate); 
             });
 
             // 1. ポイントの端数調整 (合計が0になるように)
@@ -463,7 +433,7 @@
                     topPlayer.moneyPreFee = Math.round(topPlayer.point * rate); // 金額再計算
                 }
             }
-
+            
             // finalMoneyは場代清算前の収支とする。
             let finalResults = results.map(r => ({ ...r, finalMoney: r.moneyPreFee }));
 
@@ -472,9 +442,9 @@
                 createdAt: new Date().toISOString(), // Firebase無効時のフォールバック
                 results: finalResults,
                 // NEW: feePayerを設定に含める
-                settings: { startScore, returnScore, uma: umaStr, rate, fee, feePayer }
+                settings: { startScore, returnScore, uma: umaStr, rate, fee, feePayer } 
             };
-
+            
             // Firebase無効の場合、履歴リストがないため集計を更新
             if (!isFirebaseActive) {
                 calculateDailyTotal([currentCalculatedData]); // 現在の局のみを渡す
@@ -485,16 +455,16 @@
 
         function displayResultPreview(results) {
             const container = document.getElementById('resultList');
-
+            
             container.innerHTML = results.map((r, i) => {
                 const moneyClass = r.finalMoney >= 0 ? 'text-blue-300' : 'text-red-300';
                 const moneySign = r.finalMoney > 0 ? '+' : '';
                 const pointSign = r.point > 0 ? '+' : '';
-
+                
                 return `
                 <div class="flex items-center justify-between p-3 rounded-lg ${i === 0 ? 'bg-white bg-opacity-10' : 'bg-white bg-opacity-5'}">
                     <div class="flex items-center">
-                        <div class="w-6 h-6 rounded flex items-center justify-center font-bold text-xs mr-3 ${r.rank === 1 ? 'bg-yellow-500 text-black' : 'bg-gray-600 text-white'}">
+                        <div class="w-6 h-6 rounded flex items-center justify-center font-bold text-xs mr-3 ${r.rank===1?'bg-yellow-500 text-black':'bg-gray-600 text-white'}">
                             ${r.rank}
                         </div>
                         <div>
@@ -508,14 +478,14 @@
                     </div>
                 </div>
             `}).join('');
-
+            
             document.getElementById('resultPreview').classList.remove('hidden');
         }
 
         // ------------------------------------
         // データ保存・読み込み (Firestore/Local)
         // ------------------------------------
-
+        
         // ローカルストレージ設定保存
         window.saveSettingsToLocal = () => {
             const settings = {
@@ -543,7 +513,7 @@
                 if (s.fee !== undefined) {
                     document.getElementById('settingFee').value = s.fee;
                 } else {
-                    document.getElementById('settingFee').value = 0;
+                    document.getElementById('settingFee').value = 0; 
                 }
                 // NEW: 支払い者設定はlocalStorage.getItem('janlog_fee_payer_name')として参照される
                 if (s.feePayer) {
@@ -572,19 +542,14 @@
             try {
                 // Firestoreのデバッグログを有効化
                 setLogLevel('Debug');
-
+                
                 app = initializeApp(firebaseConfig);
                 auth = getAuth(app);
                 db = getFirestore(app);
 
-                // 匿名認証/カスタムトークン認証
-                let userCredential;
-                if (initialAuthToken) {
-                    userCredential = await signInWithCustomToken(auth, initialAuthToken);
-                } else {
-                    userCredential = await signInAnonymously(auth);
-                }
-
+                // 匿名認証を実行 (独立した環境ではカスタムトークン認証は不要)
+                const userCredential = await signInAnonymously(auth);
+                
                 userId = userCredential.user.uid;
                 document.getElementById('userIdDisplay').textContent = userId.substring(0, 6) + '...';
                 setupHistoryListener();
@@ -612,13 +577,14 @@
                 console.error("ユーザーIDまたは計算データがありません。");
                 return;
             }
-
+            
             try {
-                const path = `artifacts/${appId}/users/${userId}/sessions`;
+                // 独立した環境のFirestoreパス
+                const path = `artifacts/${appId}/users/${userId}/sessions`; 
                 currentCalculatedData.createdAt = serverTimestamp(); // サーバータイムスタンプを設定
-
+                
                 await addDoc(collection(db, path), currentCalculatedData);
-
+                
                 resetInputs();
                 console.log("記録しました！");
             } catch (e) {
@@ -634,9 +600,9 @@
                 console.log("同期失敗: クラウドのデータを削除できません。");
                 return;
             }
-
+            
             // カスタムモーダルに置き換えるべきですが、ここでは便宜上confirmを使用
-            if (!window.confirm("この記録を削除しますか？")) return;
+            if(!window.confirm("この記録を削除しますか？")) return; 
             try {
                 const path = `artifacts/${appId}/users/${userId}/sessions`;
                 await deleteDoc(doc(db, path, id));
@@ -653,14 +619,14 @@
                 return;
             }
             const path = `artifacts/${appId}/users/${userId}/sessions`;
-            const q = query(collection(db, path));
-
+            const q = query(collection(db, path)); 
+            
             const listContainer = document.getElementById('historyList');
             const loadingMsg = document.getElementById('loadingMessage');
 
             onSnapshot(q, (snapshot) => {
                 loadingMsg.style.display = 'none';
-
+                
                 let allSessions = [];
 
                 if (snapshot.empty) {
@@ -670,7 +636,7 @@
                         const data = doc.data();
                         allSessions.push({ id: doc.id, ...data }); // IDを含めて集計用に保持
                     });
-
+                    
                     // 日付順にソート (降順)
                     allSessions.sort((a, b) => {
                         // タイムスタンプオブジェクトをDateに変換して比較
@@ -678,18 +644,18 @@
                         const timeB = b.createdAt && typeof b.createdAt.toDate === 'function' ? b.createdAt.toDate().getTime() : 0;
                         return timeB - timeA;
                     });
-
+                    
                     // 履歴UIのレンダリング
-                    listContainer.innerHTML = allSessions.map(({ id, ...data }) => {
+                    listContainer.innerHTML = allSessions.map(({id, ...data}) => {
                         const date = data.createdAt && typeof data.createdAt.toDate === 'function' ? new Date(data.createdAt.toDate()) : new Date();
-                        const dateStr = date.toLocaleString('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-
+                        const dateStr = date.toLocaleString('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute:'2-digit' });
+                        
                         const settings = data.settings || {};
                         const rateStr = settings.rate ? `¥${settings.rate.toLocaleString()}/1K` : 'レート不明';
                         const okaValue = settings.returnScore && settings.startScore ? (settings.returnScore - settings.startScore) * 4 / 1000 : 0;
                         const umaOkaStr = `ウマ:${settings.uma || 'N/A'}, オカ:${okaValue.toFixed(0)}P`;
                         // 場代総額と支払い者を履歴に表示
-                        const feeStr = settings.fee && settings.fee > 0 ?
+                        const feeStr = settings.fee && settings.fee > 0 ? 
                             `場代: ¥${parseInt(settings.fee).toLocaleString()} (${settings.feePayer === '__everyone__' ? '割勘' : settings.feePayer + '立替'})` : '';
 
 
@@ -707,15 +673,15 @@
                                 </div>
 
                                 <div class="space-y-1">
-                                    ${data.results.sort((a, b) => a.rank - b.rank).map(r => {
-                            const ptColor = r.point > 0 ? 'text-green-600' : (r.point < 0 ? 'text-red-500' : 'text-gray-500');
-                            const moneyColor = r.moneyPreFee > 0 ? 'text-blue-600' : (r.moneyPreFee < 0 ? 'text-red-600' : 'text-gray-500');
-                            const displayMoney = Math.round(r.moneyPreFee); // 履歴では場代割勘前の金額を丸めて表示
+                                    ${data.results.sort((a,b)=>a.rank-b.rank).map(r => {
+                                        const ptColor = r.point > 0 ? 'text-green-600' : (r.point < 0 ? 'text-red-500' : 'text-gray-500');
+                                        const moneyColor = r.moneyPreFee > 0 ? 'text-blue-600' : (r.moneyPreFee < 0 ? 'text-red-600' : 'text-gray-500');
+                                        const displayMoney = Math.round(r.moneyPreFee); // 履歴では場代割勘前の金額を丸めて表示
 
-                            return `
+                                        return `
                                         <div class="flex justify-between text-sm items-center">
                                             <div class="flex items-center w-24">
-                                                <span class="inline-block w-4 text-center text-xs font-bold ${r.rank === 1 ? 'text-yellow-600' : ''}">${r.rank}</span>
+                                                <span class="inline-block w-4 text-center text-xs font-bold ${r.rank===1?'text-yellow-600':''}">${r.rank}</span>
                                                 <span class="truncate ml-1 font-medium">${r.name}</span>
                                             </div>
                                             <div class="text-gray-500 text-xs w-16 text-right">${r.rawScore.toLocaleString()}</div>
@@ -723,7 +689,7 @@
                                             <div class="text-xs font-bold w-16 text-right ${moneyColor}">${displayMoney > 0 ? '+' : ''}${displayMoney.toLocaleString()}円</div>
                                         </div>
                                         `
-                        }).join('')}
+                                    }).join('')}
                                 </div>
                             </div>
                         `;
@@ -734,11 +700,11 @@
                 calculateDailyTotal(allSessions.map(({ id, ...rest }) => rest));
             });
         }
-
+        
         // 清算指示を生成し、UIに表示する
         function renderSettlementSummary(playerStats) {
             let settlements = [];
-
+            
             // 収支がマイナス（支払う側）とプラス（受け取る側）のリストを作成
             // ここでは p.finalMoney (場代調整後の金額) を使用します
             let payers = Object.values(playerStats)
@@ -746,14 +712,14 @@
                 .map(p => ({
                     name: p.name,
                     // 支払うべき額 (正の値)
-                    amount: Math.round(-p.finalMoney)
-                }));
+                    amount: Math.round(-p.finalMoney) 
+                })); 
             let receivers = Object.values(playerStats)
                 .filter(p => p.finalMoney > 0)
                 .map(p => ({
                     name: p.name,
                     // 受け取るべき額 (正の値)
-                    amount: Math.round(p.finalMoney)
+                    amount: Math.round(p.finalMoney) 
                 }));
 
             // ... 既存の清算アルゴリズム (変更なし) ...
@@ -781,14 +747,14 @@
                 receiver.amount -= payment;
 
                 // 支払い義務/受取権利がなくなったプレイヤーのインデックスを進める
-                if (payer.amount <= 0.5) {
+                if (payer.amount <= 0.5) { 
                     pIndex++;
                 }
-                if (receiver.amount <= 0.5) {
+                if (receiver.amount <= 0.5) { 
                     rIndex++;
                 }
             }
-
+            
             const summaryContainer = document.getElementById('settlementSummary');
             if (settlements.length === 0) {
                 summaryContainer.innerHTML = '<p class="text-gray-400 text-sm text-center py-2">清算の必要はありません (収支±0)</p>';
@@ -808,7 +774,7 @@
 
         // NEW: calculateDailyTotal のロジックを更新
         function calculateDailyTotal(sessions) {
-
+            
             const today = new Date().toDateString();
             const todaySessions = sessions.filter(s => {
                 // Firebaseのタイムスタンプが未定義の場合、ISO文字列を使うようにフォールバック
@@ -826,22 +792,22 @@
             const playerStats = {};
             const totalGames = todaySessions.length;
             const feeMessageDisplay = document.getElementById('dailyFeeMessage');
-
+            
             // 最初に設定された場代総額と支払い者を取得（その日のルールとして最新のものを使用）
             let latestFeeSetting = 0;
-            let feePaidBy = '__everyone__';
-
+            let feePaidBy = '__everyone__'; 
+            
             if (sessions.length > 0 && sessions[0].settings) {
                 latestFeeSetting = parseInt(sessions[0].settings.fee) || 0;
-                feePaidBy = sessions[0].settings.feePayer || '__everyone__';
+                feePaidBy = sessions[0].settings.feePayer || '__everyone__'; 
             } else {
                 // 履歴がない場合は現在の設定を使用
                 latestFeeSetting = parseInt(document.getElementById('settingFee').value) || 0;
                 feePaidBy = document.getElementById('settingFeePayer').value || '__everyone__';
             }
-
+            
             const totalFeeDebit = latestFeeSetting;
-
+            
             // プレイヤーの名前を特定するために、その日のセッションの結果を使用
             let uniquePlayers = new Set();
             if (todaySessions.length > 0) {
@@ -849,40 +815,40 @@
                     session.results.forEach(r => uniquePlayers.add(r.name));
                 });
             } else {
-                // 履歴がゼロの場合、現在の入力名を使用
+                 // 履歴がゼロの場合、現在の入力名を使用
                 players.forEach(p => uniquePlayers.add(p.name));
             }
-            const playerCount = uniquePlayers.size > 0 ? uniquePlayers.size : 4;
+            const playerCount = uniquePlayers.size > 0 ? uniquePlayers.size : 4; 
 
             let feePerPlayer = 0;
             if (playerCount > 0) {
                 feePerPlayer = totalFeeDebit / playerCount; // 割勘額
             }
-
+            
             // 場代割勘メッセージの更新
             if (totalGames > 0 && totalFeeDebit > 0) {
                 let payerMsg = feePaidBy === '__everyone__' ? '全員で割勘' : `${feePaidBy}さんが立て替えています`;
                 feeMessageDisplay.textContent = `場代総額 ¥${totalFeeDebit.toLocaleString()}を${playerCount}名で割勘清算します (一人あたり ¥${Math.round(feePerPlayer).toLocaleString()})。支払い方法: ${payerMsg}`;
             } else {
-                feeMessageDisplay.textContent = '';
+                 feeMessageDisplay.textContent = '';
             }
 
             // 1. 各局の成績を合算 (場代割勘前の合計)
             todaySessions.forEach(session => {
                 session.results.forEach(r => {
                     if (!playerStats[r.name]) {
-                        playerStats[r.name] = {
-                            name: r.name,
-                            totalPoint: 0,
+                        playerStats[r.name] = { 
+                            name: r.name, 
+                            totalPoint: 0, 
                             rawMoney: 0, // 場代割勘前の合計
-                            ranks: [0, 0, 0, 0],
+                            ranks: [0,0,0,0], 
                             games: 0
                         };
                     }
                     playerStats[r.name].totalPoint += (r.point || 0);
                     playerStats[r.name].rawMoney += (r.moneyPreFee || 0);
                     playerStats[r.name].games += 1;
-                    if (r.rank >= 1 && r.rank <= 4) {
+                    if(r.rank >= 1 && r.rank <= 4) {
                         playerStats[r.name].ranks[r.rank - 1]++;
                     }
                 });
@@ -890,30 +856,30 @@
 
             // 2. 場代を割勘して最終収支を決定 (立て替えを考慮)
             const allPlayers = Array.from(uniquePlayers); // 全員をリストアップ
-
+            
             allPlayers.forEach(pName => {
                 if (!playerStats[pName]) {
                     // 一度も対局していないが、場代精算には含める必要があるプレイヤー
-                    playerStats[pName] = {
-                        name: pName,
-                        totalPoint: 0,
-                        rawMoney: 0,
-                        ranks: [0, 0, 0, 0],
+                     playerStats[pName] = { 
+                        name: pName, 
+                        totalPoint: 0, 
+                        rawMoney: 0, 
+                        ranks: [0,0,0,0], 
                         games: 0
                     };
                 }
 
                 const p = playerStats[pName];
-
+                
                 // (a) 全員が割勘額を負担 (負債)
-                let feeAdjustment = -feePerPlayer;
-
+                let feeAdjustment = -feePerPlayer; 
+                
                 // (b) 立て替え者だった場合、負担した総額を回収する権利 (債権) を加算
                 if (feePaidBy !== '__everyone__' && p.name === feePaidBy) {
                     // -feePerPlayer (負債) + totalFeeDebit (債権)
                     feeAdjustment += totalFeeDebit;
                 }
-
+                
                 // 最終収支 = 場代割勘前の合計 + 調整額
                 p.finalMoney = p.rawMoney + feeAdjustment;
             });
@@ -922,30 +888,30 @@
             // 3. 集計表示
             const container = document.getElementById('dailyTotalList');
             const finalPlayerStatsArray = Object.values(playerStats);
-
+            
             if (finalPlayerStatsArray.length === 0 && todaySessions.length === 0) {
                 container.innerHTML = '<p class="text-gray-400 text-sm text-center py-4">本日の対局はまだありません</p>';
-                renderSettlementSummary({});
+                renderSettlementSummary({}); 
                 return;
             }
 
             // ポイント順にソート (対局者のみ)
             const sortedPlayers = finalPlayerStatsArray
-                .filter(p => p.games > 0) // 対局したプレイヤーのみを成績に表示
-                .sort((a, b) => b.totalPoint - a.totalPoint);
-
+                                    .filter(p => p.games > 0) // 対局したプレイヤーのみを成績に表示
+                                    .sort((a, b) => b.totalPoint - a.totalPoint);
+            
             // 対局者がいない場合 (場代清算だけ必要な場合)
             if (sortedPlayers.length === 0 && totalGames === 0 && finalPlayerStatsArray.length > 0) {
                 // 対局がなくても場代清算が必要な場合は、全プレイヤーの精算サマリーは表示する
-                container.innerHTML = '<p class="text-center text-gray-400 py-2">本日、成績を記録した対局はありません。</p>';
+                 container.innerHTML = '<p class="text-center text-gray-400 py-2">本日、成績を記録した対局はありません。</p>';
             } else if (sortedPlayers.length === 0) {
-                container.innerHTML = '<p class="text-center text-gray-400 py-4">データがありません</p>';
+                 container.innerHTML = '<p class="text-center text-gray-400 py-4">データがありません</p>';
             } else {
-                container.innerHTML = sortedPlayers.map((p, i) => {
+                 container.innerHTML = sortedPlayers.map((p, i) => {
                     const displayPoint = Math.round(p.totalPoint * 10) / 10;
                     const ptClass = displayPoint > 0 ? 'text-green-800 bg-green-100' : (displayPoint < 0 ? 'text-red-800 bg-red-100' : 'text-gray-600 bg-gray-100');
                     const avgRank = (p.ranks.reduce((sum, count, idx) => sum + count * (idx + 1), 0) / p.games).toFixed(2);
-
+                    
                     // 本日の成績欄は場代を含めない rawMoney を使用
                     const rawMoneyRounded = Math.round(p.rawMoney);
 
@@ -990,5 +956,4 @@
 
     </script>
 </body>
-
 </html>

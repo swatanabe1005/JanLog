@@ -1,0 +1,46 @@
+type User @table {
+  username: String!
+  email: String!
+  createdAt: Timestamp!
+  displayName: String
+  age: Int
+  gender: String
+  weight: Float
+}
+
+type Workout @table {
+  date: Date!
+  durationMinutes: Int!
+  workoutType: String!
+  notes: String
+  user: User
+}
+
+type ExerciseDefinition @table {
+  name: String!
+  category: String!
+  description: String
+  isCustom: Boolean
+}
+
+type WorkoutExercise @table {
+  sets: Int
+  reps: Int
+  weightKg: Float
+  distanceKm: Float
+  durationSeconds: Int
+  notes: String
+  workout: Workout
+  exerciseDefinition: ExerciseDefinition
+}
+
+type Goal @table {
+  goalType: String!
+  targetValue: Float!
+  startDate: Date!
+  targetDate: Date!
+  currentValue: Float
+  description: String
+  isAchieved: Boolean
+  user: User
+}

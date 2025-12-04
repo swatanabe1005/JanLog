@@ -1,0 +1,79 @@
+mutation CreateSeedData @transaction @auth(level: PUBLIC, insecureReason: "This operation is for seeding data and is safe to expose to the public") {
+  user_insertMany(data: [
+    {
+      id: "550e8400-e29b-41d4-a716-446655440000",
+      username: "demouser1",
+      email: "demouser1@example.com",
+      createdAt: "2024-01-01T00:00:00Z"
+    },
+    {
+      id: "550e8400-e29b-41d4-a716-446655440001",
+      username: "demouser2",
+      email: "demouser2@example.com",
+      createdAt: "2024-01-02T00:00:00Z"
+    }
+  ])
+  exerciseDefinition_insertMany(data: [
+    {
+      id: "650e8400-e29b-41d4-a716-446655440000",
+      name: "Push-ups",
+      category: "Bodyweight",
+      isCustom: false
+    },
+    {
+      id: "650e8400-e29b-41d4-a716-446655440001",
+      name: "Squats",
+      category: "Bodyweight",
+      isCustom: false
+    }
+  ])
+  workout_insertMany(data: [
+    {
+      id: "750e8400-e29b-41d4-a716-446655440000",
+      userId: "550e8400-e29b-41d4-a716-446655440000",
+      date: "2024-01-05",
+      durationMinutes: 30,
+      workoutType: "Strength"
+    },
+    {
+      id: "750e8400-e29b-41d4-a716-446655440001",
+      userId: "550e8400-e29b-41d4-a716-446655440001",
+      date: "2024-01-06",
+      durationMinutes: 45,
+      workoutType: "Cardio"
+    }
+  ])
+  workoutExercise_insertMany(data: [
+    {
+      workoutId: "750e8400-e29b-41d4-a716-446655440000",
+      exerciseDefinitionId: "650e8400-e29b-41d4-a716-446655440000",
+      sets: 3,
+      reps: 10
+    },
+    {
+      workoutId: "750e8400-e29b-41d4-a716-446655440001",
+      exerciseDefinitionId: "650e8400-e29b-41d4-a716-446655440001",
+      durationSeconds: 600
+    }
+  ])
+  goal_insertMany(data: [
+    {
+      userId: "550e8400-e29b-41d4-a716-446655440000",
+      targetValue: 75.0,
+      currentValue: 70.0,
+      startDate: "2024-01-01",
+      targetDate: "2024-03-31",
+      goalType: "WeightLoss",
+      isAchieved: false
+    },
+    {
+      userId: "550e8400-e29b-41d4-a716-446655440001",
+      targetValue: 150.0,
+      currentValue: 90.0,
+      startDate: "2024-01-01",
+      targetDate: "2024-12-31",
+      goalType: "CardioMinutes",
+      isAchieved: false
+    }
+  ])
+}

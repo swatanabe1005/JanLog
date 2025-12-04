@@ -93,13 +93,22 @@
                     </div>
                     <p class="text-xs text-gray-400 mt-1">※50=点5, 100=点ピン</p>
                 </div>
+                <!-- 場代総額 -->
                 <div>
                     <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">場代総額 (日額)</label>
                     <div class="relative">
                         <span class="absolute left-3 top-2 text-gray-400 text-sm">¥</span>
                         <input type="number" id="settingFee" value="1000" class="w-full pl-6 p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-gray-50 font-mono" onchange="saveSettingsToLocal()">
                     </div>
-                    <p class="text-xs text-gray-400 mt-1">※総額を全員で割勘清算します。局数は関係ありません。</p>
+                    <p class="text-xs text-gray-400 mt-1">※総額を全員で割勘清算します。</p>
+                </div>
+                <!-- NEW: 場代支払い者 (立て替え者) -->
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">場代支払い者 (立て替え)</label>
+                    <select id="settingFeePayer" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-gray-50" onchange="saveSettingsToLocal()">
+                        <!-- JSでオプションを生成 -->
+                    </select>
+                    <p class="text-xs text-gray-400 mt-1">※代表して払った人を選択。</p>
                 </div>
             </div>
         </div>
@@ -171,7 +180,7 @@
                         <span class="text-xs font-normal bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full">Total</span>
                     </h2>
                     
-                    <p class="text-xs text-gray-500 mb-2">総ポイントと場代割勘後の最終収支です。</p>
+                    <p class="text-xs text-gray-500 mb-2">対局の純粋なスコア収支です（場代含まず）。</p>
                     <p class="text-xs text-red-500 mb-4 font-bold" id="dailyFeeMessage"></p>
 
 
@@ -181,7 +190,7 @@
 
                     <div class="mt-6 pt-4 border-t text-xs text-gray-400">
                         <p>※ ポイント = (素点 - 返し点)/1000 + ウマ + オカ</p>
-                        <p>※ 収支 = ポイント × レート - 場代割勘額</p>
+                        <p>※ 収支 = ポイント × レート (場代は含みません)</p>
                     </div>
                 </div>
 
@@ -190,7 +199,7 @@
                     <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
                         <i class="fa-solid fa-money-bill-transfer mr-2 text-green-500"></i> 清算サマリー
                     </h2>
-                    <p class="text-sm text-gray-500 mb-4">マイナス収支のプレイヤーからプラス収支のプレイヤーへの支払い指示です。</p>
+                    <p class="text-sm text-gray-500 mb-4">場代を含めた最終的な支払い指示です。</p>
                     <div id="settlementSummary" class="space-y-3">
                         <p class="text-gray-400 text-sm text-center py-2">清算するデータがありません</p>
                     </div>
@@ -235,6 +244,7 @@
         window.updatePlayerName = (index, val) => {
             players[index].name = val;
             savePlayersToLocal();
+            renderFeePayerOptions(); // NEW: プレイヤー名変更時にも場代支払い者ドロップダウンを更新
         };
 
         window.updatePlayerScore = (index, val) => {
@@ -266,7 +276,33 @@
                 </div>
             `).join('');
             updateTotalScoreDisplay();
+            renderFeePayerOptions(); // NEW: プレイヤー入力生成時にも場代支払い者ドロップダウンを更新
         }
+        
+        // NEW: 場代支払い者ドロップダウンのオプションを生成・設定
+        function renderFeePayerOptions() {
+            const select = document.getElementById('settingFeePayer');
+            if (!select) return;
+
+            // ローカルストレージから最後に選択されていた支払い者名を取得
+            const savedPayer = localStorage.getItem('janlog_fee_payer_name') || '__everyone__';
+            
+            let optionsHtml = '<option value="__everyone__">全員で割勘 (立て替えなし)</option>';
+
+            // 現在のプレイヤー名リストからオプションを生成
+            players.forEach(p => {
+                // プレイヤー名が変更される可能性を考慮し、値も名前とする
+                const isSelected = p.name === savedPayer;
+                optionsHtml += `<option value="${p.name}" ${isSelected ? 'selected' : ''}>${p.name}</option>`;
+            });
+
+            select.innerHTML = optionsHtml;
+            // savedPayerが現在のプレイヤーリストに含まれない場合、デフォルトに戻る
+            if (!select.value) {
+                select.value = '__everyone__';
+            }
+        }
+
 
         function updateTotalScoreDisplay() {
             const total = players.reduce((sum, p) => sum + (parseInt(p.score) || 0), 0);
@@ -292,7 +328,7 @@
         }
 
         // ------------------------------------
-        // 計算ロジック
+        // 計算ロジック (局スコア計算)
         // ------------------------------------
         window.calculate = () => {
             // 設定値取得
@@ -300,8 +336,8 @@
             const returnScore = parseInt(document.getElementById('settingReturnScore').value) || 25000;
             const umaStr = document.getElementById('settingUma').value; // "10-30"
             const rate = parseInt(document.getElementById('settingRate').value) || 0;
-            // 場代総額は局計算には使用しないが、設定値として保持
             const fee = parseInt(document.getElementById('settingFee').value) || 0; 
+            const feePayer = document.getElementById('settingFeePayer').value || '__everyone__'; // NEW: 支払い者
 
             // ウマの値を解析 [3位・2位のウマ, 4位・1位のウマ]
             const [uma3_2, uma4_1] = umaStr.split('-').map(Number); 
@@ -309,7 +345,8 @@
             // 入力バリデーション
             const scores = players.map(p => parseInt(p.score));
             if (scores.some(isNaN) || scores.length !== 4) {
-                console.error("全員の点数を入力してください");
+                console.error("全員の点数を入力してください"); 
+                // カスタムアラートに置き換えることが推奨
                 return;
             }
 
@@ -366,9 +403,10 @@
             if (Math.abs(totalPoint) > 0.01) {
                 // 誤差をトップから引く（または足す）
                 const topPlayer = results.find(r => r.rank === 1);
-                // 小数点第1位で丸めるために10をかける
-                topPlayer.point = Math.round((topPlayer.point - totalPoint) * 10) / 10;
-                topPlayer.moneyPreFee = Math.round(topPlayer.point * rate); // 金額再計算
+                if (topPlayer) {
+                    topPlayer.point = Math.round((topPlayer.point - totalPoint) * 10) / 10;
+                    topPlayer.moneyPreFee = Math.round(topPlayer.point * rate); // 金額再計算
+                }
             }
             
             // finalMoneyは場代清算前の収支とする。
@@ -378,7 +416,8 @@
             currentCalculatedData = {
                 createdAt: serverTimestamp(), // 保存時に上書きされるがプレースホルダー
                 results: finalResults,
-                settings: { startScore, returnScore, uma: umaStr, rate, fee }
+                // NEW: feePayerを設定に含める
+                settings: { startScore, returnScore, uma: umaStr, rate, fee, feePayer } 
             };
 
             displayResultPreview(finalResults);
@@ -424,9 +463,14 @@
                 returnScore: document.getElementById('settingReturnScore').value,
                 uma: document.getElementById('settingUma').value,
                 rate: document.getElementById('settingRate').value,
-                fee: document.getElementById('settingFee').value // 場代総額を保存
+                fee: document.getElementById('settingFee').value,
+                feePayer: document.getElementById('settingFeePayer').value // NEW: 支払い者
             };
             localStorage.setItem('janlog_settings', JSON.stringify(settings));
+            // NEW: 支払い者名をローカルストレージにも保存 (UI反映用)
+            localStorage.setItem('janlog_fee_payer_name', settings.feePayer);
+            // 設定変更後、集計を再計算
+            if (userId) setupHistoryListener();
         };
 
         function loadSettingsFromLocal() {
@@ -436,11 +480,14 @@
                 document.getElementById('settingReturnScore').value = s.returnScore;
                 document.getElementById('settingUma').value = s.uma;
                 document.getElementById('settingRate').value = s.rate;
-                // 新しい場代設定（総額）
                 if (s.fee !== undefined) {
                     document.getElementById('settingFee').value = s.fee;
                 } else {
-                    document.getElementById('settingFee').value = 0; // デフォルトを0にするか、適切な初期値に設定
+                    document.getElementById('settingFee').value = 0; 
+                }
+                // NEW: 支払い者設定はlocalStorage.getItem('janlog_fee_payer_name')として参照される
+                if (s.feePayer) {
+                    localStorage.setItem('janlog_fee_payer_name', s.feePayer);
                 }
             }
         }
@@ -460,18 +507,24 @@
 
         async function initFirebase() {
             try {
+                // Firestoreのデバッグログを有効化
+                setLogLevel('Debug');
+                
                 app = initializeApp(firebaseConfig);
                 auth = getAuth(app);
                 db = getFirestore(app);
 
-                onAuthStateChanged(auth, (user) => {
+                onAuthStateChanged(auth, async (user) => {
                     if (user) {
                         userId = user.uid;
                         document.getElementById('userIdDisplay').textContent = userId.substring(0, 6) + '...';
                         setupHistoryListener();
                     } else {
-                        if (initialAuthToken) signInWithCustomToken(auth, initialAuthToken);
-                        else signInAnonymously(auth);
+                        if (initialAuthToken) {
+                            await signInWithCustomToken(auth, initialAuthToken);
+                        } else {
+                            await signInAnonymously(auth);
+                        }
                     }
                 });
             } catch (e) {
@@ -496,13 +549,14 @@
                 console.log("記録しました！");
             } catch (e) {
                 console.error("Save Error", e);
+                // エラーメッセージをユーザーに表示するカスタムUIを使用することが望ましい
                 console.error("保存に失敗しました");
             }
         };
 
         window.deleteSession = async (id) => {
-            // 確認モーダルの代わりにカスタムUIを使用することが推奨されますが、ここでは簡単な確認で代用
-            if(!confirm("この記録を削除しますか？")) return; 
+            // カスタムモーダルに置き換えるべきですが、ここでは便宜上confirmを使用
+            if(!window.confirm("この記録を削除しますか？")) return; 
             try {
                 const path = `artifacts/${appId}/users/${userId}/sessions`;
                 await deleteDoc(doc(db, path, id));
@@ -514,15 +568,19 @@
         };
 
         function setupHistoryListener() {
+            if (!userId) {
+                console.log("UserIDが未定義のため、履歴リスナーを設定できません。");
+                return;
+            }
             const path = `artifacts/${appId}/users/${userId}/sessions`;
-            const q = query(collection(db, path), orderBy("createdAt", "desc"));
+            // Firestoreでのソートは避け、JSでソートするためorderByは削除。
+            const q = query(collection(db, path)); 
             
             const listContainer = document.getElementById('historyList');
             const loadingMsg = document.getElementById('loadingMessage');
 
             onSnapshot(q, (snapshot) => {
                 loadingMsg.style.display = 'none';
-                listContainer.innerHTML = '';
                 
                 let allSessions = [];
 
@@ -531,8 +589,18 @@
                 } else {
                     snapshot.docs.forEach(doc => {
                         const data = doc.data();
-                        allSessions.push(data); // 集計用に保持
-
+                        allSessions.push({ id: doc.id, ...data }); // IDを含めて集計用に保持
+                    });
+                    
+                    // 日付順にソート (降順)
+                    allSessions.sort((a, b) => {
+                        const timeA = a.createdAt ? a.createdAt.toDate().getTime() : 0;
+                        const timeB = b.createdAt ? b.createdAt.toDate().getTime() : 0;
+                        return timeB - timeA;
+                    });
+                    
+                    // 履歴UIのレンダリング
+                    listContainer.innerHTML = allSessions.map(({id, ...data}) => {
                         const date = data.createdAt ? new Date(data.createdAt.toDate()) : new Date();
                         const dateStr = date.toLocaleString('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute:'2-digit' });
                         
@@ -540,27 +608,29 @@
                         const rateStr = settings.rate ? `¥${settings.rate.toLocaleString()}/1K` : 'レート不明';
                         const okaValue = settings.returnScore && settings.startScore ? (settings.returnScore - settings.startScore) * 4 / 1000 : 0;
                         const umaOkaStr = `ウマ:${settings.uma || 'N/A'}, オカ:${okaValue.toFixed(0)}P`;
-                        // 場代総額を表示
-                        const feeStr = settings.fee && settings.fee > 0 ? `場代総額: ¥${settings.fee.toLocaleString()}` : '';
+                        // 場代総額と支払い者を履歴に表示
+                        const feeStr = settings.fee && settings.fee > 0 ? 
+                            `場代: ¥${parseInt(settings.fee).toLocaleString()} (${settings.feePayer === '__everyone__' ? '割勘' : settings.feePayer + '立替'})` : '';
 
 
-                        const html = `
+                        return `
                             <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition">
                                 <div class="flex justify-between items-center mb-2 pb-2">
                                     <div class="text-xs text-gray-500 font-mono">${dateStr}</div>
-                                    <button onclick="deleteSession('${doc.id}')" class="text-xs text-red-400 hover:text-red-600">削除</button>
+                                    <button onclick="deleteSession('${id}')" class="text-xs text-red-400 hover:text-red-600">削除</button>
                                 </div>
 
                                 <div class="flex justify-between text-xs text-gray-600 mb-3 p-2 bg-indigo-50 rounded">
                                     <span class="font-bold">${rateStr}</span>
                                     <span>${umaOkaStr}</span>
-                                    ${feeStr ? `<span>${feeStr}</span>` : ''}
+                                    ${feeStr ? `<span class="truncate max-w-[100px] sm:max-w-full">${feeStr}</span>` : ''}
                                 </div>
 
                                 <div class="space-y-1">
                                     ${data.results.sort((a,b)=>a.rank-b.rank).map(r => {
                                         const ptColor = r.point > 0 ? 'text-green-600' : (r.point < 0 ? 'text-red-500' : 'text-gray-500');
-                                        const moneyColor = r.finalMoney > 0 ? 'text-blue-600' : (r.finalMoney < 0 ? 'text-red-600' : 'text-gray-500');
+                                        const moneyColor = r.moneyPreFee > 0 ? 'text-blue-600' : (r.moneyPreFee < 0 ? 'text-red-600' : 'text-gray-500');
+                                        const displayMoney = Math.round(r.moneyPreFee); // 履歴では場代割勘前の金額を丸めて表示
 
                                         return `
                                         <div class="flex justify-between text-sm items-center">
@@ -570,19 +640,18 @@
                                             </div>
                                             <div class="text-gray-500 text-xs w-16 text-right">${r.rawScore.toLocaleString()}</div>
                                             <div class="font-bold w-12 text-right ${ptColor}">${r.point > 0 ? '+' : ''}${r.point.toFixed(1)}</div>
-                                            <div class="text-xs font-bold w-16 text-right ${moneyColor}">${r.finalMoney > 0 ? '+' : ''}${r.finalMoney.toLocaleString()}円</div>
+                                            <div class="text-xs font-bold w-16 text-right ${moneyColor}">${displayMoney > 0 ? '+' : ''}${displayMoney.toLocaleString()}円</div>
                                         </div>
                                         `
                                     }).join('')}
                                 </div>
                             </div>
                         `;
-                        listContainer.innerHTML += html;
-                    });
+                    }).join('');
                 }
 
                 // 本日の集計を実行
-                calculateDailyTotal(allSessions);
+                calculateDailyTotal(allSessions.map(({ id, ...rest }) => rest));
             });
         }
         
@@ -591,21 +660,23 @@
             let settlements = [];
             
             // 収支がマイナス（支払う側）とプラス（受け取る側）のリストを作成
+            // ここでは p.finalMoney (場代調整後の金額) を使用します
             let payers = Object.values(playerStats)
-                .filter(p => p.totalMoney < 0)
+                .filter(p => p.finalMoney < 0)
                 .map(p => ({
                     name: p.name,
                     // 支払うべき額 (正の値)
-                    amount: Math.round(-p.totalMoney) 
+                    amount: Math.round(-p.finalMoney) 
                 })); 
             let receivers = Object.values(playerStats)
-                .filter(p => p.totalMoney > 0)
+                .filter(p => p.finalMoney > 0)
                 .map(p => ({
                     name: p.name,
                     // 受け取るべき額 (正の値)
-                    amount: Math.round(p.totalMoney) 
+                    amount: Math.round(p.finalMoney) 
                 }));
 
+            // ... 既存の清算アルゴリズム (変更なし) ...
             let pIndex = 0;
             let rIndex = 0;
 
@@ -621,7 +692,7 @@
                     settlements.push({
                         from: payer.name,
                         to: receiver.name,
-                        amount: payment // 既に丸め済み
+                        amount: payment
                     });
                 }
 
@@ -630,7 +701,6 @@
                 receiver.amount -= payment;
 
                 // 支払い義務/受取権利がなくなったプレイヤーのインデックスを進める
-                // 端数誤差対策として0.5未満をチェック
                 if (payer.amount <= 0.5) { 
                     pIndex++;
                 }
@@ -656,6 +726,7 @@
             }
         }
 
+        // NEW: calculateDailyTotal のロジックを更新
         function calculateDailyTotal(sessions) {
             const today = new Date().toDateString();
             const todaySessions = sessions.filter(s => {
@@ -667,22 +738,38 @@
             const totalGames = todaySessions.length;
             const feeMessageDisplay = document.getElementById('dailyFeeMessage');
             
-            let totalFeeDebit = 0;
-            let feePerPlayer = 0;
-            
-            // 最初に設定された場代総額を取得（その日のルールとして最新のものを使用）
+            // 最初に設定された場代総額と支払い者を取得（その日のルールとして最新のものを使用）
             let latestFeeSetting = 0;
-            if (sessions.length > 0 && sessions[0].settings && sessions[0].settings.fee !== undefined) {
+            let feePaidBy = '__everyone__'; // NEW: 支払い者
+            
+            if (sessions.length > 0 && sessions[0].settings) {
                 latestFeeSetting = parseInt(sessions[0].settings.fee) || 0;
+                feePaidBy = sessions[0].settings.feePayer || '__everyone__'; 
             }
             
-            // 場代総額を決定（局数には依存しない）
-            totalFeeDebit = latestFeeSetting;
-            feePerPlayer = totalFeeDebit / 4; // 割勘額
+            const totalFeeDebit = latestFeeSetting;
+            
+            // プレイヤーの名前を特定するために、その日のセッションの結果を使用
+            let uniquePlayers = new Set();
+            if (todaySessions.length > 0) {
+                todaySessions.forEach(session => {
+                    session.results.forEach(r => uniquePlayers.add(r.name));
+                });
+            } else {
+                 // 履歴がゼロの場合、現在の入力名を使用
+                players.forEach(p => uniquePlayers.add(p.name));
+            }
+            const playerCount = uniquePlayers.size > 0 ? uniquePlayers.size : 4; 
+
+            let feePerPlayer = 0;
+            if (playerCount > 0) {
+                feePerPlayer = totalFeeDebit / playerCount; // 割勘額
+            }
             
             // 場代割勘メッセージの更新
             if (totalGames > 0 && totalFeeDebit > 0) {
-                feeMessageDisplay.textContent = `場代総額 ¥${totalFeeDebit.toLocaleString()}を全員で割勘清算します (一人あたり ¥${Math.round(feePerPlayer).toLocaleString()})。`;
+                let payerMsg = feePaidBy === '__everyone__' ? '全員で割勘' : `${feePaidBy}さんが立て替えています`;
+                feeMessageDisplay.textContent = `場代総額 ¥${totalFeeDebit.toLocaleString()}を${playerCount}名で割勘清算します (一人あたり ¥${Math.round(feePerPlayer).toLocaleString()})。支払い方法: ${payerMsg}`;
             } else {
                  feeMessageDisplay.textContent = '';
             }
@@ -694,14 +781,13 @@
                         playerStats[r.name] = { 
                             name: r.name, 
                             totalPoint: 0, 
-                            totalMoney: 0, // 場代割勘前の合計
-                            ranks: [0,0,0,0], // 1位, 2位, 3位, 4位の回数
+                            rawMoney: 0, // 場代割勘前の合計
+                            ranks: [0,0,0,0], 
                             games: 0
                         };
                     }
-                    // r.finalMoney は場代清算前の局収支
                     playerStats[r.name].totalPoint += (r.point || 0);
-                    playerStats[r.name].totalMoney += (r.finalMoney || 0); 
+                    playerStats[r.name].rawMoney += (r.moneyPreFee || 0);
                     playerStats[r.name].games += 1;
                     if(r.rank >= 1 && r.rank <= 4) {
                         playerStats[r.name].ranks[r.rank - 1]++;
@@ -709,18 +795,29 @@
                 });
             });
 
-            // 2. 場代を割勘して最終収支を決定
-            const finalPlayerStats = Object.values(playerStats).map(p => ({
-                ...p,
-                // 場代割勘後の最終収支
-                totalMoney: p.totalMoney - feePerPlayer 
-            }));
+            // 2. 場代を割勘して最終収支を決定 (立て替えを考慮)
+            const finalPlayerStats = Object.values(playerStats).map(p => {
+                // (a) 全員が割勘額を負担 (負債)
+                let feeAdjustment = -feePerPlayer; 
+                
+                // (b) 立て替え者だった場合、負担した総額を回収する権利 (債権) を加算
+                if (feePaidBy !== '__everyone__' && p.name === feePaidBy) {
+                    // -feePerPlayer (負債) + totalFeeDebit (債権)
+                    feeAdjustment += totalFeeDebit;
+                }
+                
+                return {
+                    ...p,
+                    // 最終収支 = 場代割勘前の合計 + 調整額
+                    finalMoney: p.rawMoney + feeAdjustment 
+                }
+            });
 
             // 3. 集計表示
             const container = document.getElementById('dailyTotalList');
-            if (finalPlayerStats.length === 0) {
+            if (finalPlayerStats.length === 0 && todaySessions.length === 0) {
                 container.innerHTML = '<p class="text-gray-400 text-sm text-center py-4">本日の対局はまだありません</p>';
-                renderSettlementSummary({}); // 清算サマリーもリセット
+                renderSettlementSummary({}); 
                 return;
             }
 
@@ -728,15 +825,12 @@
             const sortedPlayers = finalPlayerStats.sort((a, b) => b.totalPoint - a.totalPoint);
 
             container.innerHTML = sortedPlayers.map((p, i) => {
-                // 小数点処理による誤差で-0.0になるのを防ぐ
                 const displayPoint = Math.round(p.totalPoint * 10) / 10;
                 const ptClass = displayPoint > 0 ? 'text-green-800 bg-green-100' : (displayPoint < 0 ? 'text-red-800 bg-red-100' : 'text-gray-600 bg-gray-100');
-                
-                // 平均順位
                 const avgRank = (p.ranks.reduce((sum, count, idx) => sum + count * (idx + 1), 0) / p.games).toFixed(2);
                 
-                // 最終収支を丸めて表示
-                const finalMoneyRounded = Math.round(p.totalMoney);
+                // 本日の成績欄は場代を含めない rawMoney を使用
+                const rawMoneyRounded = Math.round(p.rawMoney);
 
                 return `
                 <div class="flex items-center justify-between p-3 rounded-lg border border-gray-100 bg-white shadow-sm">
@@ -753,8 +847,8 @@
                         </div>
                     </div>
                     <div class="text-right">
-                        <div class="font-bold text-lg ${finalMoneyRounded >= 0 ? 'text-blue-600' : 'text-red-500'}">
-                            ${finalMoneyRounded > 0 ? '+' : ''}${finalMoneyRounded.toLocaleString()}
+                        <div class="font-bold text-lg ${rawMoneyRounded >= 0 ? 'text-blue-600' : 'text-red-500'}">
+                            ${rawMoneyRounded > 0 ? '+' : ''}${rawMoneyRounded.toLocaleString()}
                             <span class="text-xs font-normal text-gray-400">円</span>
                         </div>
                         <div class="text-xs text-gray-400 flex space-x-1 justify-end" title="順位回数: 1位 - 2位 - 3位 - 4位">
@@ -769,7 +863,12 @@
             }).join('');
 
             // 4. 清算サマリーの表示
-            renderSettlementSummary(finalPlayerStats.reduce((acc, p) => ({...acc, [p.name]: p}), {}));
+            // ここには場代を含めた finalMoney を持つオブジェクト配列をオブジェクト形式に変換して渡す
+            const statsForSettlement = {};
+            finalPlayerStats.forEach(p => {
+                statsForSettlement[p.name] = p;
+            });
+            renderSettlementSummary(statsForSettlement);
 
         }
 

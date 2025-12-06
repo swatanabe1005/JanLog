@@ -91,9 +91,10 @@
                     <select id="settingUma"
                         class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-gray-50"
                         onchange="saveSettingsToLocal()">
-                        <option value="10-30">10 - 30 (ゴットー)</option>
+                        <option value="5-10">5 - 10 (ゴットー)</option>
                         <option value="10-20">10 - 20 (ワンツー)</option>
-                        <option value="5-10">5 - 10 (ウマナリ)</option>
+                        <option value="10-30">10 - 30 (ワンスリー)</option>
+                        <option value="20-30">20 - 30 (ツースリー)</option>
                         <option value="0-0">なし</option>
                     </select>
                 </div>
@@ -400,7 +401,7 @@
             // 設定値取得
             const startScore = parseInt(document.getElementById('settingStartScore').value) || 25000;
             const returnScore = parseInt(document.getElementById('settingReturnScore').value) || 25000;
-            const umaStr = document.getElementById('settingUma').value; // "10-30"
+            const umaStr = document.getElementById('settingUma').value; // "5-10"
             const rate = parseInt(document.getElementById('settingRate').value) || 0;
             const fee = parseInt(document.getElementById('settingFee').value) || 0;
             const feePayer = document.getElementById('settingFeePayer').value || '__everyone__';
@@ -867,7 +868,7 @@
             }
 
             if (totalGames > 0 && totalFeeDebit > 0) {
-                let payerMsg = feePaidBy === '__everyone__' ? '全員で割勘' : `${feePaidBy}さんが立て替えています`;
+                let payerMsg = feePaidBy === '__everyone__' ? '全員で割勘' : `${feePaidBy}が立て替えています`;
                 feeMessageDisplay.textContent = `場代総額 ¥${totalFeeDebit.toLocaleString()}を${playerCount}名で割勘清算します (一人あたり ¥${Math.round(feePerPlayer).toLocaleString()})。支払い方法: ${payerMsg}`;
             } else {
                 feeMessageDisplay.textContent = '';

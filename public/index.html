@@ -125,7 +125,7 @@
                         class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-gray-50"
                         onchange="saveSettingsToLocal()">
                         <!-- JSでオプションを生成 -->
-                        </select>
+                    </select>
                     <p class="text-xs text-gray-400 mt-1">※代表して払った人を選択。</p>
                 </div>
             </div>
@@ -149,7 +149,7 @@
 
                     <div class="grid grid-cols-1 gap-4" id="playerInputs">
                         <!-- JSで入力行を生成 -->
-                        </div>
+                    </div>
 
                     <!-- 合計点数チェック表示 -->
                     <div class="mt-4 flex justify-between items-center text-sm">
@@ -174,7 +174,7 @@
                     </h3>
                     <div id="resultList" class="space-y-3 mb-6">
                         <!-- JSで結果生成 -->
-                        </div>
+                    </div>
                     <button onclick="saveSession()"
                         class="w-full bg-yellow-500 text-gray-900 font-bold py-3 rounded-lg hover:bg-yellow-400 transition shadow-lg">
                         <i class="fa-solid fa-save mr-2"></i> この結果を記録する
@@ -189,7 +189,7 @@
                     <p class="text-gray-500 text-sm mb-4" id="loadingMessage">データをロード中...</p>
                     <div id="historyList" class="space-y-4">
                         <!-- JSで履歴生成 -->
-                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -223,7 +223,14 @@
                     <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
                         <i class="fa-solid fa-money-bill-transfer mr-2 text-green-500"></i> 清算サマリー
                     </h2>
-                    <p class="text-sm text-gray-500 mb-4">場代を含めた最終的な支払い指示です。</p>
+
+                    <h3 class="text-sm font-semibold text-gray-700 mb-2 border-b pb-1">
+                        <i class="fa-solid fa-receipt mr-1 text-gray-400"></i> 最終収支内訳 (場代込み)
+                    </h3>
+                    <div id="settlementBreakdown" class="space-y-2 mb-4">
+                        <p class="text-gray-400 text-sm text-center py-1">データがありません</p>
+                    </div>
+                    <p class="text-sm text-gray-500 mb-4 border-t pt-4">支払い指示 (過不足を最小化)</p>
                     <div id="settlementSummary" class="space-y-3">
                         <p class="text-gray-400 text-sm text-center py-2">清算するデータがありません</p>
                     </div>
@@ -715,6 +722,27 @@
                 calculateDailyTotal(allSessions.map(({ id, ...rest }) => rest));
             });
         }
+        function renderSettlementBreakdown(playerStats) {
+            const container = document.getElementById('settlementBreakdown');
+            const finalPlayerStatsArray = Object.values(playerStats).sort((a, b) => b.finalMoney - a.finalMoney);
+
+            if (finalPlayerStatsArray.length === 0) {
+                container.innerHTML = '<p class="text-gray-400 text-sm text-center py-1">データがありません</p>';
+                return;
+            }
+
+            container.innerHTML = finalPlayerStatsArray.map(p => {
+                const moneyClass = p.finalMoney >= 0 ? 'text-blue-600 bg-blue-50' : 'text-red-600 bg-red-50';
+                const sign = p.finalMoney > 0 ? '+' : '';
+
+                return `
+                    <div class="flex justify-between items-center p-2 rounded-lg ${moneyClass}">
+                        <span class="font-medium">${p.name}</span>
+                        <span class="font-bold text-base">${sign}${Math.round(p.finalMoney).toLocaleString()} 円</span>
+                    </div>
+                `;
+            }).join('');
+        }
 
         function renderSettlementSummary(playerStats) {
             let settlements = [];
@@ -936,6 +964,9 @@
             finalPlayerStatsArray.forEach(p => {
                 statsForSettlement[p.name] = p;
             });
+            // 最終収支の内訳を表示
+            renderSettlementBreakdown(statsForSettlement);
+            // 支払い指示を表示
             renderSettlementSummary(statsForSettlement);
         }
 

@@ -125,7 +125,7 @@
                         class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-gray-50"
                         onchange="saveSettingsToLocal()">
                         <!-- JSでオプションを生成 -->
-                    </select>
+                        </select>
                     <p class="text-xs text-gray-400 mt-1">※代表して払った人を選択。</p>
                 </div>
             </div>
@@ -149,7 +149,7 @@
 
                     <div class="grid grid-cols-1 gap-4" id="playerInputs">
                         <!-- JSで入力行を生成 -->
-                    </div>
+                        </div>
 
                     <!-- 合計点数チェック表示 -->
                     <div class="mt-4 flex justify-between items-center text-sm">
@@ -174,7 +174,7 @@
                     </h3>
                     <div id="resultList" class="space-y-3 mb-6">
                         <!-- JSで結果生成 -->
-                    </div>
+                        </div>
                     <button onclick="saveSession()"
                         class="w-full bg-yellow-500 text-gray-900 font-bold py-3 rounded-lg hover:bg-yellow-400 transition shadow-lg">
                         <i class="fa-solid fa-save mr-2"></i> この結果を記録する
@@ -189,14 +189,14 @@
                     <p class="text-gray-500 text-sm mb-4" id="loadingMessage">データをロード中...</p>
                     <div id="historyList" class="space-y-4">
                         <!-- JSで履歴生成 -->
-                    </div>
+                        </div>
                 </div>
             </div>
 
             <!-- 右カラム：本日の集計 (4/12) -->
             <div class="lg:col-span-4 space-y-6">
                 <!-- トータル成績パネル -->
-                <div class="card p-6 sticky top-6 border-t-4 border-indigo-500">
+                <div class="card p-6 border-t-4 border-indigo-500">
                     <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center justify-between">
                         <span><i class="fa-solid fa-chart-simple mr-2 text-indigo-500"></i> 本日の成績</span>
                         <span
@@ -204,6 +204,7 @@
                     </h2>
 
                     <p class="text-xs text-gray-500 mb-2">対局の純粋なスコア収支です（場代含まず）。</p>
+                    <p class="text-xs text-gray-500 mb-4">順位回数: 1位 - 2位 - 3位 - 4位 の回数</p>
                     <p class="text-xs text-red-500 mb-4 font-bold" id="dailyFeeMessage"></p>
 
 

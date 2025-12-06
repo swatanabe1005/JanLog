@@ -107,7 +107,7 @@
                     </div>
                     <p class="text-xs text-gray-400 mt-1">※50=点5, 100=点ピン</p>
                 </div>
-                </div>
+            </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -128,7 +128,7 @@
 
                     <div class="grid grid-cols-1 gap-4" id="playerInputs">
                         <!-- JSで入力行を生成 -->
-                        </div>
+                    </div>
 
                     <!-- 合計点数チェック表示 -->
                     <div class="mt-4 flex justify-between items-center text-sm">
@@ -153,7 +153,7 @@
                     </h3>
                     <div id="resultList" class="space-y-3 mb-6">
                         <!-- JSで結果生成 -->
-                        </div>
+                    </div>
                     <button onclick="saveSession()"
                         class="w-full bg-yellow-500 text-gray-900 font-bold py-3 rounded-lg hover:bg-yellow-400 transition shadow-lg">
                         <i class="fa-solid fa-save mr-2"></i> この結果を記録する
@@ -168,7 +168,7 @@
                     <p class="text-gray-500 text-sm mb-4" id="loadingMessage">データをロード中...</p>
                     <div id="historyList" class="space-y-4">
                         <!-- JSで履歴生成 -->
-                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -184,7 +184,7 @@
 
                     <p class="text-xs text-gray-500 mb-2">対局の純粋なスコア収支です（場代含まず）。</p>
                     <p class="text-xs text-gray-500 mb-4">順位回数: 1位 - 2位 - 3位 - 4位 の回数</p>
-                    
+
                     <div id="dailyTotalList" class="space-y-4">
                         <p class="text-gray-400 text-sm text-center py-4">データがありません</p>
                     </div>
@@ -199,11 +199,12 @@
                     <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
                         <i class="fa-solid fa-money-bill-transfer mr-2 text-green-500"></i> 清算サマリー
                     </h2>
-                    
+
                     <div class="space-y-4 mb-6 border-b pb-4">
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">場代総額 (日額)</label>
+                                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">場代総額
+                                    (日額)</label>
                                 <div class="relative">
                                     <span class="absolute left-3 top-2 text-gray-400 text-sm">¥</span>
                                     <input type="number" id="settingFee" value="1000"
@@ -213,16 +214,17 @@
                                 <p class="text-xs text-gray-400 mt-1">※総額を全員で割勘清算します。</p>
                             </div>
                             <div>
-                                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">場代支払い者 (立て替え)</label>
+                                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">場代支払い者
+                                    (立て替え)</label>
                                 <select id="settingFeePayer"
                                     class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-green-500 bg-gray-50"
                                     onchange="saveSettingsToLocal()">
-                                    </select>
+                                </select>
                                 <p class="text-xs text-gray-400 mt-1">※代表して払った人を選択。</p>
                             </div>
                         </div>
 
-                        <button onclick="calculateDailyTotal(allSessionsGlobal)"
+                        <button onclick="recalculateSettlement()"
                             class="w-full bg-green-600 text-white font-bold py-3 px-6 rounded-lg shadow hover:bg-green-700 transition flex justify-center items-center">
                             <i class="fa-solid fa-calculator mr-2"></i> 清算を計算する
                         </button>
@@ -234,13 +236,13 @@
                     <div id="settlementBreakdown" class="space-y-2 mb-4">
                         <p class="text-gray-400 text-sm text-center py-1">データがありません</p>
                     </div>
-                    
+
                     <p class="text-sm text-gray-500 mb-4 border-t pt-4">支払い指示 (過不足を最小化)</p>
                     <div id="settlementSummary" class="space-y-3">
                         <p class="text-gray-400 text-sm text-center py-2">清算するデータがありません</p>
                     </div>
                 </div>
-                
+
             </div>
         </div>
     </div>
@@ -536,7 +538,7 @@
             };
             localStorage.setItem('janlog_settings', JSON.stringify(settings));
             localStorage.setItem('janlog_fee_payer_name', settings.feePayer);
-            
+
             // 設定変更時に即座に清算を再計算 (履歴があれば)
             if (allSessionsGlobal.length > 0) {
                 calculateDailyTotal(allSessionsGlobal);
@@ -817,6 +819,13 @@
                 `).join('');
             }
         }
+        /**
+         * 清算サマリーのボタンから呼ばれ、モジュールスコープの全セッションデータを使用して清算を再計算する
+         */
+        window.recalculateSettlement = () => {
+            // allSessionsGlobal はモジュールスコープ内で定義されているため、ここでアクセス可能
+            calculateDailyTotal(allSessionsGlobal);
+        };
 
         window.calculateDailyTotal = (sessions) => { // グローバルで呼び出せるようにwindowに追加
             const today = new Date().toDateString();
@@ -970,10 +979,10 @@
             finalPlayerStatsArray.forEach(p => {
                 statsForSettlement[p.name] = p;
             });
-            
+
             // 最終収支の内訳を表示
-            renderSettlementBreakdown(statsForSettlement); 
-            
+            renderSettlementBreakdown(statsForSettlement);
+
             // 支払い指示を表示
             renderSettlementSummary(statsForSettlement);
         }
